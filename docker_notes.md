@@ -1,3 +1,5 @@
+Largely based on Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
+
 # Docker Notes
 
 Docker version format changed early 2017. Versions are now YY.MM  based (like Ubuntu) and you can choose *Stable* (slower) or *Edge* (faster) releases. This means that newer features drop faster in Edge releases, and fixes are backported for a longer timeline to Stable releases. Everyone wins.
@@ -119,7 +121,7 @@ To create simple *round robin DNS name resolution* (a poor man's load balancer) 
 * `docker container run --rm -d --net my_network --net-alias search elasticsearch:2` - (running a second container, exact same command!)
 * `docker container ls` - Notice the ports they use (9200, 9300), we are NOT exposing the ports on the host!
 * `docker container run --rm --net my_network alpine nslookup search` - Should list both container IP addresses.
-* `docker container run --rm --net my_network centos curl -s search:9200` - Calling elasticsearch by the alias. Repeatedly calling should alternate between the two containers. Check the server's `name` attribute to verify. *THIS DID NOT WORK FOR ME. IT ALWAYS CALLED THE SAME CONTAINER. ONY SWITHED TO THE OTHER ONE WHEN THE FIRST CONTAINER WAS STOPPED.*
+* `docker container run --rm --net my_network centos curl -s search:9200` - Calling elasticsearch by the alias. Repeatedly calling should alternate between the two containers. Check the server's `name` attribute to verify. *THIS DID NOT WORK FOR ME. IT ALWAYS CALLED THE SAME CONTAINER. ONLY SWITCHED TO THE OTHER ONE WHEN THE FIRST CONTAINER WAS STOPPED.*
 
 
 ## Building Images
