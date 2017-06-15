@@ -256,7 +256,7 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 * `COPY` - Copies file from the builder current directory to the image current dir.
 
 *Dockerfile*
-```python
+```shell
 # this same shows how we can extend/change an existing official image from Docker Hub
 
 FROM nginx:latest
@@ -281,7 +281,7 @@ Inherits all instructions from the `nginx` `Dockerfile`.
 #### Dockerfile Example 3
 
 https://github.com/tkarakai-gto/udemy-docker-mastery/blob/master/dockerfile-assignment-1
-```python
+```java
 FROM node:6-alpine
 
 EXPOSE 3000
@@ -402,7 +402,7 @@ This is just the default name, you can use another YAML file name with the `-f` 
 * `docker-compose --help`
 
 *Template YAML content*
-```python
+```yaml
 version: '3.1'  # if no version is specificed then v1 is assumed. Recommend v2 minimum
 
 services:  # containers. same as docker run
