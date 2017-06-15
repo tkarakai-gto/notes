@@ -183,7 +183,7 @@ The proper way to log is *NOT* to log to a log file, and there is no syslogd aor
 * `CMD` - Command to run every time the container is started or restarted.
 
 *Dockerfile*
-```python
+```java
 # NOTE: this example is taken from the default Dockerfile for the official nginx Docker Hub Repo
 # https://hub.docker.com/_/nginx/
 FROM debian:stretch-slim
@@ -256,7 +256,7 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 * `COPY` - Copies file from the builder current directory to the image current dir.
 
 *Dockerfile*
-```shell
+```java
 # this same shows how we can extend/change an existing official image from Docker Hub
 
 FROM nginx:latest
