@@ -1,6 +1,41 @@
-Largely based on Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
-
 # Docker Notes
+
+> largely based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
+
+## Table of Contents
+
+<!-- TOC START min:2 max:4 link:true update:true -->
+  - [Table of Contents](#table-of-contents)
+  - [Basics](#basics)
+      - [Docker Containers are *NOT* lightweight VMs](#docker-containers-are-not-lightweight-vms)
+      - [Getting inside of an existing/running container](#getting-inside-of-an-existingrunning-container)
+      - [Basic Monitoring](#basic-monitoring)
+      - [Quick temporary containers](#quick-temporary-containers)
+  - [Networking Basics](#networking-basics)
+  - [Name Resolution](#name-resolution)
+  - [Building Images](#building-images)
+      - [Tags](#tags)
+      - [Docker Hub](#docker-hub)
+      - [Dockerfile Example 1](#dockerfile-example-1)
+      - [docker image build](#docker-image-build)
+      - [Dockerfile Example 2](#dockerfile-example-2)
+      - [Dockerfile Example 3](#dockerfile-example-3)
+  - [Container Lifetime & Persistent Data](#container-lifetime--persistent-data)
+      - [Persistent Data Volumes](#persistent-data-volumes)
+      - [Bind Mounts](#bind-mounts)
+      - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
+      - [Jekyll exercise](#jekyll-exercise)
+  - [Docker Compose](#docker-compose)
+      - [docker-compose.yml](#docker-composeyml)
+      - [docker-compose CLI](#docker-compose-cli)
+      - [Building images within compose files](#building-images-within-compose-files)
+  - [Swarm Mode](#swarm-mode)
+
+<!-- TOC END -->
+
+## Basics
+
+> [`http://docs.docker.com`](http://docs.docker.com)
 
 Docker version format changed early 2017. Versions are now YY.MM  based (like Ubuntu) and you can choose *Stable* (slower) or *Edge* (faster) releases. This means that newer features drop faster in Edge releases, and fixes are backported for a longer timeline to Stable releases. Everyone wins.
 
@@ -13,11 +48,6 @@ Docker version format changed early 2017. Versions are now YY.MM  based (like Ub
 *Server* - Docker Engine a.k.a. the Docker Server answering to the API requests and running docker functions
 
 * `docker info` - More detailed info, including stats, drivers, etc.
-
-> [`http://docs.docker.com`](http://docs.docker.com)
-
-
-## Basics
 
 *Images* - File(s) containing the application we want to run.
 
