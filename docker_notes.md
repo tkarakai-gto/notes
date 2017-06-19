@@ -13,7 +13,8 @@ Docker version format changed early 2017. Versions are now YY.MM  based (like Ub
 *Server* - Docker Engine a.k.a. the Docker Server answering to the API requests and running docker functions
 
 * `docker info` - More detailed info, including stats, drivers, etc.
-* [`docs.docker.com`](https://docs.docker.com)
+
+> [`http://docs.docker.com`](http://docs.docker.com)
 
 
 ## Basics
@@ -46,7 +47,7 @@ Compare PIDs reported by `docker top nginx` with PIDs reported by the regular Li
 
 * `docker-machine ssh` - Teleport into the console of the Docker Engine (vs. running commands on the Client)
 
-* https://github.com/mikegcoleman/docker101/blob/master/Docker_eBook_Jan_2017.pdf
+> https://github.com/mikegcoleman/docker101/blob/master/Docker_eBook_Jan_2017.pdf
 
 
 #### Getting inside of an existing/running container
@@ -60,7 +61,7 @@ For running containers:
 * `docker container exec -it redis bash` - Starts interactive session (new process) of a running container (Ubuntu and other major distros)
 * `docker container exec -it redis sh` - Starts interactive session (new process) of a running container (Alpine Linux)
 
-* https://www.digitalocean.com/community/tutorials/package-management-basics-apt-yum-dnf-pkg
+> https://www.digitalocean.com/community/tutorials/package-management-basics-apt-yum-dnf-pkg
 
 
 #### Basic Monitoring
@@ -96,11 +97,15 @@ Then there are "network drivers" too...
 
 * `docker container port nginx` - Shows port configuration of the container
 * `docker container inspect --format '{{ .NetworkSettings.IPAddress }}' nginx` - Extracts the IP address of the container on the virtual network
-* https://docs.docker.com/engine/admin/formatting/
+
+> https://docs.docker.com/engine/admin/formatting/
+
 * `docker network --help`
 * `docker network ls` - Lists virtual networks
 * `docker network create my_network [--driver ...]` - Create new virtual network (optionally with a driver)
-* https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/
+
+> https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/
+
 * `docker network inspect my_network` - JSON metadata about the virtual network, for example Subnet, default gateway, etc. Lists containers on it and their MAC addresses too.
 * `docker container run --rm -d --network my_network nginx` - Run a container on a specific network (`--net` is a shorthand for `--network`)
 * `docker network connect --help`
@@ -134,7 +139,7 @@ To create simple *round robin DNS name resolution* (a poor man's load balancer) 
 
 *Image* is the application binaries and dependencies plus the metadata on how to run it. *Officially:* "An image is an ordered collection of root filesystem changes and the corresponding execution parameters for use within a container runtime".
 
-* https://github.com/moby/moby/blob/master/image/spec/v1.md
+> https://github.com/moby/moby/blob/master/image/spec/v1.md
 
 There are no OS inside an image. No kernel, no kernel modules (e.g. drivers).
 
@@ -159,13 +164,14 @@ Tag is just a label for a specific image on docker hub. There can be multiple ta
 
 #### Docker Hub
 
-* https://github.com/docker-library/official-images/tree/master/library
+> https://github.com/docker-library/official-images/tree/master/library
+
 * `docker login tkarakai` - Log into docker hub by default. Stores auth key in `.docker/config.json` in Windows.
 * `docker image push tkarakai/nginx:testing` - Push to docker hub.
 * `docker image rm tkarakai/nginx:testing` - Remove tag (it figured based on the name that it's a tag, not an actual image) from the local repository.
 * `docker logout`
 
-Docker Hun supports private repositories. For that create the repo in docker hub first on the web interface with visibility "private", then push images.
+Docker Hub supports private repositories. For that create the repo in docker hub first on the web interface with visibility "private", then push images.
 
 #### Dockerfile Example 1
 
@@ -280,7 +286,8 @@ Inherits all instructions from the `nginx` `Dockerfile`.
 
 #### Dockerfile Example 3
 
-https://github.com/tkarakai-gto/udemy-docker-mastery/blob/master/dockerfile-assignment-1
+> https://github.com/tkarakai-gto/udemy-docker-mastery/blob/master/dockerfile-assignment-1
+
 ```yaml
 FROM node:6-alpine
 
@@ -303,9 +310,9 @@ CMD ["tini", "--", "node", "./bin/www"]
 
 ## Container Lifetime & Persistent Data
 
-* [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)
-* [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)
-* [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)
+ > [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)  
+ > [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)  
+> [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)  
 
 *Containers are meant to be immutable and ephemeral (disposable) as a design goal. We do not change things once they are running, instead we re-deploy a whole new container.*
 
@@ -367,7 +374,7 @@ Instead of running the OS package management `update` of the db version, use nam
 
 The point is developers only need to run the container (no need to install Ruby and dependencies), the developer can simply use Bind Mounts to point to his workstation's directory and edit the content files there
 
-https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/bindmount-sample-1
+> https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/bindmount-sample-1
 
 * `docker container run --rm -p 80:4000 -v $(pwd):/site bretfisher/jekyll-serve` - run from the sample directory, starts the site generator
 * Go to http://192.168.99.100/
@@ -376,22 +383,23 @@ https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/bindmount-sampl
 * Refresh the browser
 
 
-## Compose
+## Docker Compose
 
 A way to configure relationships between containers, save `docker container run` settings in easy-to-read file, start/stop the entire environment with a single command.
 
 It has two parts:
 
-1. `YAML` formatted `docker-compose.yml` describing:
-  * containers
-  * networks
-  * volumes
-2. `docker-compose` CLI tool for dev/test automation (uses the YAML file)
+1. `docker-compose.yml`: a `YAML` formatted file describing:
+    * containers
+    * networks
+    * volumes
+2. `docker-compose`:
+    * CLI tool for dev/test automation (uses the YAML file)
 
-* [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)
-* [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)
-* [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)
-* [Docker Compose Release Downloads (good for Linux users that need to download manually)](https://github.com/docker/compose/releases)
+> [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)  
+> [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)  
+> [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)  
+> [Docker Compose Release Downloads (good for Linux users that need to download   manually)](https://github.com/docker/compose/releases)
 
 #### docker-compose.yml
 
@@ -578,7 +586,7 @@ volumes:
 * `docker-compose top` - processes
 
 
-#### Image building in compose files
+#### Building images within compose files
 
 We can build a custom images on demand as part of the compose file. It only build once, then uses them from the cache.
 
@@ -600,3 +608,62 @@ services:
 ```
 
 * `docker-compose down -rmi local` - Removes images too that might have built.
+
+*Building Drupal with custom theme retrieved from github*
+
+*Dockerfile*
+```
+FROM drupal:8.2
+
+RUN apt-get update \
+  && apt-get install -y git \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www/html/themes
+
+RUN git clone --branch 8.x-3.x --single-branch --depth 1 https://git.drupal.org/project/bootstrap.git \
+  && chown -R www-data:www-data bootstrap
+
+WORKDIR /var/www/html
+```
+
+*docker-compose.yml*
+```yaml
+version: '2'
+
+services:
+
+  drupal:
+    build: .              # Build using the default Dockerfile in the current directory
+    image: drupal-custom  # If both 'image' and 'build' are specified, Compose will name the built image as per 'image' line
+    ports:
+      - 8080:80
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-themes:/var/www/html/themes
+      - drupal-sites:/var/www/html/sites
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=drupal
+      - POSTGRES_PASSWORD=dbpass
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data:
+  drupal-modules:
+  drupal-profiles:
+  drupal-themes:
+  drupal-sites:
+```
+
+
+## Swarm Mode
+
+New feature as of summer of 2016.  
+Server clustering solution
+
+How do you automate container lifecycle?  
+...
