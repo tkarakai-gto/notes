@@ -183,7 +183,7 @@ The proper way to log is *NOT* to log to a log file, and there is no syslogd aor
 * `CMD` - Command to run every time the container is started or restarted.
 
 *Dockerfile*
-```yaml
+```
 # NOTE: this example is taken from the default Dockerfile for the official nginx Docker Hub Repo
 # https://hub.docker.com/_/nginx/
 FROM debian:stretch-slim
@@ -382,11 +382,11 @@ A way to configure relationships between containers, save `docker container run`
 
 It has two parts:
 
-1. `YAML` formatted describing:
+1. `YAML` formatted `docker-compose.yml` describing:
   * containers
   * networks
   * volumes
-1. `docker-compose` CLI tool for dev/test automation (uses the YAML file)
+2. `docker-compose` CLI tool for dev/test automation (uses the YAML file)
 
 * [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)
 * [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)
@@ -509,7 +509,7 @@ services:
       - mysql-primary
 ```
 
-### docker-compose
+#### docker-compose CLI
 
 Program using the Docker Server API on behalf of the CLI.
 
