@@ -119,7 +119,7 @@ Container names are used as DNS names for host resolution on the same virtual ne
 
 The default "bridge" network does NOT have the DNS server built into it. For that you will need use the `--link` (add a link to another container). Easier to create a new network :).
 
-Using `docker compose` makes this mush easier by automatically creating virtual networks.
+Using `docker compose` makes this much easier by automatically creating virtual networks.
 
 To create simple *round robin DNS name resolution* (a poor man's load balancer) use the `--net-alias` option. Container names must be unique, but aliases do not. Aliases will respond to DNS queries in a round-robin fashion.
 
@@ -183,7 +183,7 @@ The proper way to log is *NOT* to log to a log file, and there is no syslogd aor
 * `CMD` - Command to run every time the container is started or restarted.
 
 *Dockerfile*
-```java
+```yaml
 # NOTE: this example is taken from the default Dockerfile for the official nginx Docker Hub Repo
 # https://hub.docker.com/_/nginx/
 FROM debian:stretch-slim
@@ -256,7 +256,7 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 * `COPY` - Copies file from the builder current directory to the image current dir.
 
 *Dockerfile*
-```java
+```yaml
 # this same shows how we can extend/change an existing official image from Docker Hub
 
 FROM nginx:latest
@@ -281,7 +281,7 @@ Inherits all instructions from the `nginx` `Dockerfile`.
 #### Dockerfile Example 3
 
 https://github.com/tkarakai-gto/udemy-docker-mastery/blob/master/dockerfile-assignment-1
-```java
+```yaml
 FROM node:6-alpine
 
 EXPOSE 3000
@@ -508,3 +508,95 @@ services:
     depends_on:
       - mysql-primary
 ```
+
+### docker-compose
+
+Program using the Docker Server API on behalf of the CLI.
+
+* `docker-compose up` - Set up volumes, networks and start all containers
+* `docker-compose down` - Stop all containers and remove content, volumes, networks
+* `docker-compose down -v` - Stop all containers and remove content, volumes, networks and delete volumes
+
+With `docker-compose` new developer on-boarding could be as simple as:
+1. Install Docker
+2. `git clone server/repo/project`
+3. `cd repo/project`
+4. `docker-compose up`
+
+*Reverse proxy example*
+```yaml
+version: '2'
+
+services:
+  proxy:
+    image: nginx:1.11 # this will use the latest version of 1.11.x
+    ports:
+      - '80:80' # expose 80 on host and sent to 80 in container
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  web:
+    image: httpd  # this will use httpd:latest
+```
+* Notice `:ro` postfix of volume means "read-only"
+* Notice that there is no need to specify networking, it will create a new one automatically if not specified
+* Notice that there is no `volumes` section. Not needed unless you need named volumes and other specifics.
+* `docker-compose up` will start logging ALL container logs in the same console, color coded!
+* Going to `http://localhost` (or the Docker host IP) should respond with "It works!", which is served up by httpd, proxied by nginx!
+
+*Drupal with Postgres example*
+```yaml
+version: '2'
+
+services:
+
+  drupal:
+    image: drupal
+    ports:
+      - 8080:80
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-themes:/var/www/html/themes
+      - drupal-sites:/var/www/html/sites
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=drupal
+      - POSTGRES_PASSWORD=dbpass
+
+volumes:
+  drupal-modules:
+  drupal-profiles:
+  drupal-themes:
+  drupal-sites:
+```
+
+* `docker-compose up -d` - detached
+* `docker-compose logs -f` - to see the logs
+* `docker-compose ps` - lists containers running defined in the compose file
+* `docker-compose top` - processes
+
+
+#### Image building in compose files
+
+We can build a custom images on demand as part of the compose file. It only build once, then uses them from the cache.
+
+*Previous reverse proxy example, with custom proxy image*
+```yaml
+version: '2'
+
+services:
+  proxy:
+    build:                         # If the image does not exist in cache, build it
+      context: .                   # In the current directory
+      dockerfile: nginx.Dockerfile # using custom Dockerfile
+    ports:
+      - '80:80'
+  web:
+    image: httpd
+    volumes:
+      - ./html:/usr/local/apache2/htdocs/
+```
+
+* `docker-compose down -rmi local` - Removes images too that might have built.
