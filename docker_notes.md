@@ -7,28 +7,28 @@
 <!-- TOC START min:2 max:4 link:true update:true -->
   - [Table of Contents](#table-of-contents)
   - [Basics](#basics)
-      - [Docker Containers are *NOT* lightweight VMs](#docker-containers-are-not-lightweight-vms)
-      - [Getting inside of an existing/running container](#getting-inside-of-an-existingrunning-container)
-      - [Basic Monitoring](#basic-monitoring)
-      - [Quick temporary containers](#quick-temporary-containers)
+    - [Docker Containers are *NOT* lightweight VMs](#docker-containers-are-not-lightweight-vms)
+    - [Getting inside of an existing/running container](#getting-inside-of-an-existingrunning-container)
+    - [Basic Monitoring](#basic-monitoring)
+    - [Quick temporary containers](#quick-temporary-containers)
   - [Networking Basics](#networking-basics)
   - [Name Resolution](#name-resolution)
   - [Building Images](#building-images)
-      - [Tags](#tags)
-      - [Docker Hub](#docker-hub)
-      - [Dockerfile Example 1](#dockerfile-example-1)
-      - [docker image build](#docker-image-build)
-      - [Dockerfile Example 2](#dockerfile-example-2)
-      - [Dockerfile Example 3](#dockerfile-example-3)
+    - [Tags](#tags)
+    - [Docker Hub](#docker-hub)
+    - [Dockerfile Example 1](#dockerfile-example-1)
+    - [docker image build](#docker-image-build)
+    - [Dockerfile Example 2](#dockerfile-example-2)
+    - [Dockerfile Example 3](#dockerfile-example-3)
   - [Container Lifetime & Persistent Data](#container-lifetime--persistent-data)
-      - [Persistent Data Volumes](#persistent-data-volumes)
-      - [Bind Mounts](#bind-mounts)
-      - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
-      - [Jekyll exercise](#jekyll-exercise)
+    - [Persistent Data Volumes](#persistent-data-volumes)
+    - [Bind Mounts](#bind-mounts)
+    - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
+    - [Jekyll exercise](#jekyll-exercise)
   - [Docker Compose](#docker-compose)
-      - [docker-compose.yml](#docker-composeyml)
-      - [docker-compose CLI](#docker-compose-cli)
-      - [Building images within compose files](#building-images-within-compose-files)
+    - [docker-compose.yml](#docker-composeyml)
+    - [docker-compose CLI](#docker-compose-cli)
+    - [Building images within compose files](#building-images-within-compose-files)
   - [Swarm Mode](#swarm-mode)
 
 <!-- TOC END -->
@@ -67,7 +67,7 @@ Pulls latest image (is not in local image cache), starts a container based on th
 * `docker container rm -f nginx` - Removes container (with "force")
 
 
-#### Docker Containers are *NOT* lightweight VMs
+### Docker Containers are *NOT* lightweight VMs
 
 * They are just processes running on the host OS.
 * Limited to what resources they can access.
@@ -80,7 +80,7 @@ Compare PIDs reported by `docker top nginx` with PIDs reported by the regular Li
 > https://github.com/mikegcoleman/docker101/blob/master/Docker_eBook_Jan_2017.pdf
 
 
-#### Getting inside of an existing/running container
+### Getting inside of an existing/running container
 
 For stopped containers:
 
@@ -94,7 +94,7 @@ For running containers:
 > https://www.digitalocean.com/community/tutorials/package-management-basics-apt-yum-dnf-pkg
 
 
-#### Basic Monitoring
+### Basic Monitoring
 
 * `docker container top nginx` - Lists processes of the given running container.
 * `docker container stats` - Similar to Linux `top`, for all containers.
@@ -102,7 +102,7 @@ For running containers:
 * `docker container inspect nginx` - Container metadata on container, including attached networks, MAC address, etc.
 
 
-#### Quick temporary containers
+### Quick temporary containers
 
 `--rm` flag is so we don't need to clean up
 
@@ -181,7 +181,7 @@ When starting a container Docker opens a read-write layer on top of the image. W
 
 * `docker inspect nginx` - This is the metadata about the image.
 
-#### Tags
+### Tags
 
 * `docker image tag --help`
 * `docker image ls` - Look at the repository and tag columns
@@ -192,7 +192,7 @@ Tag is just a label for a specific image on docker hub. There can be multiple ta
 
 "latest" does not necessarily mean "latest", it's just another label.
 
-#### Docker Hub
+### Docker Hub
 
 > https://github.com/docker-library/official-images/tree/master/library
 
@@ -203,7 +203,7 @@ Tag is just a label for a specific image on docker hub. There can be multiple ta
 
 Docker Hub supports private repositories. For that create the repo in docker hub first on the web interface with visibility "private", then push images.
 
-#### Dockerfile Example 1
+### Dockerfile Example 1
 
 The `Dockerfile` is a recipe for creating a Docker image.
 
@@ -272,7 +272,7 @@ CMD ["nginx", "-g", "daemon off;"]
 # required: run this command when container is launched
 # only one CMD allowed, so if there are mulitple, last one wins
 ```
-#### docker image build
+### docker image build
 
 * `docker image build -t custom-nginx .` - Builds image (as "latest") in the current directory
 * `docker image ls` - The new image should show up here.
@@ -286,7 +286,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 The order of the instructions in `Dockerfile` is significant: `docker image build` will rebuilds every step after a change is detected in `Dockerfile`. Put most stable commands on the top, and most frequently changing commands towards the end.
 
-#### Dockerfile Example 2
+### Dockerfile Example 2
 
 * `WORKDIR` - Staring root dir. Preferred to using `RUN cd /path`
 * `COPY` - Copies file from the builder current directory to the image current dir.
@@ -314,7 +314,7 @@ Inherits all instructions from the `nginx` `Dockerfile`.
 * Open `http://locahost` (or http://192.168.99.100 if using Docker Toolbox) to see the custom html.
 * `docker image tag nginx-with-html tkarakai/nginx-with-html:latest` - Tag for fun, ready to be pushed to docker hub.
 
-#### Dockerfile Example 3
+### Dockerfile Example 3
 
 > https://github.com/tkarakai-gto/udemy-docker-mastery/blob/master/dockerfile-assignment-1
 
@@ -348,7 +348,7 @@ CMD ["tini", "--", "node", "./bin/www"]
 
 The container should not contain any application data mixed in with the application binaries.
 
-#### Persistent Data Volumes
+### Persistent Data Volumes
 
 "Volume" is a container independent filesystem. When containers are deleted, volumes are left alone. Volumes need to be deleted independently.
 
@@ -368,7 +368,7 @@ In the `Dockerfile`:
 
 * `docker volume create--help` - This is required to be able to specify custom drivers and labels.
 
-#### Bind Mounts
+### Bind Mounts
 
 It is a mapping of the host file or directory to a container file or directory.
 
@@ -387,7 +387,7 @@ Useful for development when editing files on the host is more convenient that sh
 * `docker container exec -it nginx bash` - Jump into the container
 * `cd /usr/share/nginx/html` - Should see the files from the host
 
-#### Database minor upgrade (exercise)
+### Database minor upgrade (exercise)
 
 Instead of running the OS package management `update` of the db version, use named volumes. The new version should be the new version of the image, pointing to the original volume.
 
@@ -398,7 +398,7 @@ Instead of running the OS package management `update` of the db version, use nam
 * `docker container run --rm -d --name psql2 -v psql:/var/lib/postgresql/data postgres:9.6.2` - start new db version pointing to the existing volume
 * `docker container logs psql2` - It should have a very short log, skipping the initialization
 
-#### Jekyll exercise
+### Jekyll exercise
 
 `jekyll` is a static web site generator. [Jekyll, a Static Site Generator (just as background info, no need to install)](https://jekyllrb.com/) It is the tool generating github pages.
 
@@ -431,7 +431,7 @@ It has two parts:
 > [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)  
 > [Docker Compose Release Downloads (good for Linux users that need to download   manually)](https://github.com/docker/compose/releases)
 
-#### docker-compose.yml
+### docker-compose.yml
 
 Versions are different, be careful.
 
@@ -547,7 +547,7 @@ services:
       - mysql-primary
 ```
 
-#### docker-compose CLI
+### docker-compose CLI
 
 Program using the Docker Server API on behalf of the CLI.
 
@@ -616,7 +616,7 @@ volumes:
 * `docker-compose top` - processes
 
 
-#### Building images within compose files
+### Building images within compose files
 
 We can build a custom images on demand as part of the compose file. It only build once, then uses them from the cache.
 
