@@ -1,6 +1,6 @@
 # Docker Notes
 
-> largely based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
+> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
 
 ## Table of Contents
 
@@ -13,11 +13,13 @@
     - [Quick temporary containers](#quick-temporary-containers)
   - [Networking Basics](#networking-basics)
   - [Name Resolution](#name-resolution)
-  - [Building Images](#building-images)
+  - [Images defined](#images-defined)
     - [Tags](#tags)
     - [Docker Hub](#docker-hub)
-    - [Dockerfile Example 1](#dockerfile-example-1)
-    - [docker image build](#docker-image-build)
+  - [Building Images](#building-images)
+    - [Building with `docker commit`](#building-with-docker-commit)
+    - [Building with Dockerfile, Example 1](#building-with-dockerfile-example-1)
+    - [`docker image build`](#docker-image-build)
     - [Dockerfile Example 2](#dockerfile-example-2)
     - [Dockerfile Example 3](#dockerfile-example-3)
   - [Container Lifetime & Persistent Data](#container-lifetime--persistent-data)
@@ -30,6 +32,7 @@
     - [docker-compose CLI](#docker-compose-cli)
     - [Building images within compose files](#building-images-within-compose-files)
   - [Swarm Mode](#swarm-mode)
+  - [Extra](#extra)
 
 <!-- TOC END -->
 
@@ -75,7 +78,13 @@ Pulls latest image (is not in local image cache), starts a container based on th
 
 Compare PIDs reported by `docker top nginx` with PIDs reported by the regular Linux `ps aux | grep nginx`. They both show the same!
 
+If you use Docker Toolbox:
+
 * `docker-machine ssh` - Teleport into the console of the Docker Engine (vs. running commands on the Client)
+
+`docker-machine` is a Docker host mamagement CLI. By default it talks to the VM that is set up with Docker Toolbox (if on an older Windows or Mac), but it can create new Docker hosts, including on cloud platforms. It can also provision `Swarm` clusters.
+
+> https://docs.docker.com/machine/overview/
 
 > https://github.com/mikegcoleman/docker101/blob/master/Docker_eBook_Jan_2017.pdf
 
@@ -123,6 +132,8 @@ A container can be attached to multiple virtual networks (much like PCs can have
 
 A container can skip NAT and use the host networking `--net=host` (not recommended).
 
+A container can be on no network with the `--net=none` setting.
+
 Then there are "network drivers" too...
 
 * `docker container port nginx` - Shows port configuration of the container
@@ -142,6 +153,30 @@ Then there are "network drivers" too...
 * `docker network connect my_network redis` - Connects container to the network (insert virtual NIC plugged into the given network)
 * `docker network disconnect my_network redis` -Disconnects container from the network (remove virtual NIC plugged into the given network)
 * `docker network rm my_network` - Delete virtual network
+
+*Example `docker-compose.yml` demostrating network separation*
+```yaml
+services:
+    proxy:
+      image: nginx-custom
+      networks:
+        - front
+    app:
+      image: myApp
+      networks:
+        - front
+        - back
+    db:
+      image: postgres
+      networks:
+        - back
+
+networks:
+  front:
+    driver: custom-driver-1
+  back:
+    driver: custom-driver-2
+```
 
 
 ## Name Resolution
@@ -165,7 +200,7 @@ To create simple *round robin DNS name resolution* (a poor man's load balancer) 
 * `docker container run --rm --net my_network centos curl -s search:9200` - Calling elasticsearch by the alias. Repeatedly calling should alternate between the two containers. Check the server's `name` attribute to verify. *THIS DID NOT WORK FOR ME. IT ALWAYS CALLED THE SAME CONTAINER. ONLY SWITCHED TO THE OTHER ONE WHEN THE FIRST CONTAINER WAS STOPPED.*
 
 
-## Building Images
+## Images defined
 
 *Image* is the application binaries and dependencies plus the metadata on how to run it. *Officially:* "An image is an ordered collection of root filesystem changes and the corresponding execution parameters for use within a container runtime".
 
@@ -173,7 +208,7 @@ To create simple *round robin DNS name resolution* (a poor man's load balancer) 
 
 There are no OS inside an image. No kernel, no kernel modules (e.g. drivers).
 
-Images use the union filesystem which are layers on top of layers of filesystem changes.
+Images use the union filesystem which are layers on top of layers of filesystem changes. Each executed OS command adds a new layer.
 
 * `docker history nginx` - Shows layers of changes (commands)
 
@@ -203,20 +238,41 @@ Tag is just a label for a specific image on docker hub. There can be multiple ta
 
 Docker Hub supports private repositories. For that create the repo in docker hub first on the web interface with visibility "private", then push images.
 
-### Dockerfile Example 1
+## Building Images
 
-The `Dockerfile` is a recipe for creating a Docker image.
+There are basic ways to build an image:
+1. With `docker commit`
+2. With a `Dockerfile` and `docker image build`
 
-* `FROM` - Base image
+### Building with `docker commit`
+
+With `docker commit`, you first start a container, log in and make changes inside the container, stop the container and finally commit the changes as a new layer into a new image.
+
+* `docker commit <iamge> <repo-name>:<tag-name>`
+
+### Building with Dockerfile, Example 1
+
+The `Dockerfile` (the file named as such, with no extention) is a recipe for creating a Docker image. It contains "instructions". The instructions names a uppercased by convention (not required).
+
+> https://docs.docker.com/engine/reference/builder/
+
+The build starts on the Docker Client, so the build context (all the files needed, including the `Dockerfile` itself and maybe some files to be copied into the image) are first packed into a tarball and then sent to the Docker Engine.
+
+Once the Docker Engine receives the build context, it starts a new container, executes the instructions, commits the new layer for each one, then at the end it stops and deletes the container.
+
+Let's start with some basid `Dockerfile` instructions:
+
+* `FROM` - Base image. must be the first instruction in `Dockerfile`
 * `ENV` - Set environment variables. This is the way set keys and values to inject.
 * `RUN` - Execute command(s)
   * Use `&&` to concatenate commands to preserve FS layers.
   * Can run shell scripts, copy files, etc.
+  * Do *NOT* use commands that result in nondeterministic results, Docker will not know that it should build a new image layer. For example do not use `RUN apt-get update` by itself, append the specific apps to install/update to make it more specific, or use the `--no-cahce=true` flag in the `docker build ` command.
 
 The proper way to log is *NOT* to log to a log file, and there is no syslogd aor other syslog server either, Docker actually handles all the logging for us. All we have to do is all our logs are spit out into STDIN and STDERR. See second `RUN` command below.
 
 * `EXPOSE` - Expose ports withing the virtual network (not yet to the outside!)
-* `CMD` - Command to run every time the container is started or restarted.
+* `CMD` - The default command to run every time the container is started or restarted (at runtime, not build time). Can be owerwritten with the command specified on the `docker container run` command.
 
 *Dockerfile*
 ```
@@ -272,7 +328,7 @@ CMD ["nginx", "-g", "daemon off;"]
 # required: run this command when container is launched
 # only one CMD allowed, so if there are mulitple, last one wins
 ```
-### docker image build
+### `docker image build`
 
 * `docker image build -t custom-nginx .` - Builds image (as "latest") in the current directory
 * `docker image ls` - The new image should show up here.
@@ -289,7 +345,11 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 ### Dockerfile Example 2
 
 * `WORKDIR` - Staring root dir. Preferred to using `RUN cd /path`
-* `COPY` - Copies file from the builder current directory to the image current dir.
+* `COPY` - Copies file from the builder current directory (client side) to the image current dir.
+* `ADD` - Similar to `COPY` but can add files from a URL, it can decompress source files. Generally less transparent than `COPY`, so it is less prefered.
+* Use the `.dockerignore` file to exclude files to be copyed with `COPY` and `ADD`
+
+* `USER` - Sets the user name or UID to use when running the image and for any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile. *Highly recommended to set to a nonpriviledged user.* For example use something like `RUN useradd -ms /bin/bash mynewuser` before the `USER` instruction.
 
 *Dockerfile*
 ```yaml
@@ -340,9 +400,9 @@ CMD ["tini", "--", "node", "./bin/www"]
 
 ## Container Lifetime & Persistent Data
 
- > [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)  
- > [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)  
-> [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)  
+ > * [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)  
+ > * [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)  
+> * [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)  
 
 *Containers are meant to be immutable and ephemeral (disposable) as a design goal. We do not change things once they are running, instead we re-deploy a whole new container.*
 
@@ -426,10 +486,10 @@ It has two parts:
 2. `docker-compose`:
     * CLI tool for dev/test automation (uses the YAML file)
 
-> [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)  
-> [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)  
-> [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)  
-> [Docker Compose Release Downloads (good for Linux users that need to download   manually)](https://github.com/docker/compose/releases)
+> * [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)  
+> * [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)  
+> * [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)  
+> * [Docker Compose Release Downloads (good for Linux users that need to download   manually)](https://github.com/docker/compose/releases)
 
 ### docker-compose.yml
 
@@ -662,7 +722,6 @@ WORKDIR /var/www/html
 version: '2'
 
 services:
-
   drupal:
     build: .              # Build using the default Dockerfile in the current directory
     image: drupal-custom  # If both 'image' and 'build' are specified, Compose will name the built image as per 'image' line
@@ -689,11 +748,54 @@ volumes:
   drupal-sites:
 ```
 
+* The `extends` keyword in `docker-compose.yml` enables sharing of common configurations among different files, or even different projects entirely. Extending services is useful if you have several services that reuse a common set of configuration options.
+
+```yaml
+verion: '2.1'
+
+web:
+  extends:
+    file: common-services.yml
+    service: webapp
+    environment:
+      - DEBUG=1
+    cpu_shares: 5
+```
+
+> *WARNING* `extends` currently only works up to v2.1, NOT YET in v3.x (as of June 2017)
 
 ## Swarm Mode
 
-New feature as of summer of 2016.  
-Server clustering solution
+Multi-node container life cycle management and orchestrattion solution, new feature as of summer of 2016.
+* First there was "Swarm classic", before v1.12, just a container repeating commands multiple times.
+* v1.12 Swarm Kit was introduced (Summer 2016).
+* v1.13 Stacks and Secrets were added (Jan 2017).
 
-How do you automate container lifecycle?  
-...
+Swarm is *NOT* enabled by default, to make sure that existing orchestrattion solutions on top of Docker keep working. When enabled, it adds commands:
+
+* `docker swarm`
+* `docker node`
+* `docker service`
+* `docker stack`
+* `docker secret`
+
+*Manager* - Nodes managing the swarm. There is one *leader* at any given time. If current leader goes down, new manager is elected. Managers all have the swarm configuration in their local database (in memory cache) replicated. Managers communicate among themselves via secured RAFT protocol. There can be maximum 7 managers. Managers send "tasks" to "worker" nodes. Managers decide about which task should run on which worker node. The same node can alsi act as a worker.
+
+*Worker* - Node connected to a Manager accepting work to be executed and reporting back to the manager with the execution status.
+
+*Service* - In a swarm "service" replaced the `docker run` command. It can run multiple replicas of the same container.
+
+*Task* - A "job" for the worker node to start a container with a certain configuration.
+
+> * [Docker 1.12 Swarm Mode Deep Dive Part 1: Topology (YouTube)](https://www.youtube.com/watch?v=dooPhkXT9yI)
+> * [Docker 1.12 Swarm Mode Deep Dive Part 2: Orchestration (YouTube)](https://www.youtube.com/watch?v=_F6PSP-qhdA)
+> * [Heart of the SwarmKit: Topology Management (slides)](https://speakerdeck.com/aluzzardi/heart-of-the-swarmkit-topology-management)
+> * [Heart of the SwarmKit: Store, Topology & Object Model (YouTube)](https://www.youtube.com/watch?v=EmePhjGnCXY)
+> * [Raft Consensus Visualization (Our Swarm DB and how it stays in sync across nodes)](http://thesecretlivesofdata.com/raft/)
+
+
+## Extra
+
+* https://circleci.com/ can do continiuous build/test/deploy of a Docker container, trigered by Github/Bitbucket chamges, 1 container FREE.
+* https://codeship.com can do pretty much the same
+* https://www.digitalocean.com/pricing/ is like https://aws.amazon.com/ec2/pricing/on-demand/
