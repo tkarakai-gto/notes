@@ -33,7 +33,7 @@
     - [docker-compose CLI](#docker-compose-cli)
     - [Building images within compose files](#building-images-within-compose-files)
   - [Swarm Mode](#swarm-mode)
-    - [`docker swarm init`](#docker-swarm-init)
+    - [docker swarm init](#docker-swarm-init)
     - [Swarm Roles and Definitions](#swarm-roles-and-definitions)
     - [Create your first service and scale it out](#create-your-first-service-and-scale-it-out)
     - [What happens when a container crashes?](#what-happens-when-a-container-crashes)
@@ -788,7 +788,7 @@ Swarm is *NOT* enabled by default, to make sure that existing orchestration solu
 
 * `docker info` - Look for "Swarm: inactive"
 
-### `docker swarm init`
+### docker swarm init
 
 * `docker swarm init` - Enable Swarm on the node you are on.
 
