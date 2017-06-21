@@ -833,7 +833,7 @@ When Swarm is enabled, it adds these commands:
 * `docker node ls` - Should bring up the only node in our new swarm, with a mamager that is also the leader.
 * `docker node --help` - commands to bring nodes in and out of the swarm and promoting to managers or demoting to workers
 
-> [Deploy services to a swarm (Docker Docs)] (https://docs.docker.com/engine/swarm/services/)
+> [Deploy services to a swarm (Docker Docs)](https://docs.docker.com/engine/swarm/services/)
 
 * `docker service --help`
 * `docker service create alpine ping 8.8.8.8` - Just to create a node and give it some work while we investigate what's going on. Returns the service id (not the container id!)
@@ -945,7 +945,7 @@ It does not matter which IP address you use for accessing Drupal, eventhough it 
 
 VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighthing DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
 
-> ( Use swarm mode routing mesh (Docker Docs))[https://docs.docker.com/engine/swarm/ingress/]
+> [Use swarm mode routing mesh (Docker Docs)](https://docs.docker.com/engine/swarm/ingress/)
 
 *Excercise with elasticsearch*
 
