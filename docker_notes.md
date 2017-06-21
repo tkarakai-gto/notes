@@ -1,6 +1,6 @@
 # Docker Notes
 
-> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/).
+> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/), Course resources at: https://github.com/tkarakai-gto/udemy-docker-mastery
 
 ## Table of Contents
 
@@ -27,11 +27,19 @@
     - [Bind Mounts](#bind-mounts)
     - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
     - [Jekyll exercise](#jekyll-exercise)
+    - [Changing running container resources](#changing-running-container-resources)
   - [Docker Compose](#docker-compose)
     - [docker-compose.yml](#docker-composeyml)
     - [docker-compose CLI](#docker-compose-cli)
     - [Building images within compose files](#building-images-within-compose-files)
   - [Swarm Mode](#swarm-mode)
+    - [`docker swarm init`](#docker-swarm-init)
+    - [Swarm Roles and Definitions](#swarm-roles-and-definitions)
+    - [Create your first service and scale it out](#create-your-first-service-and-scale-it-out)
+    - [What happens when a container crashes?](#what-happens-when-a-container-crashes)
+    - [Building a multi-node swarm](#building-a-multi-node-swarm)
+    - [Scaling out with overlay networking](#scaling-out-with-overlay-networking)
+    - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
   - [Extra](#extra)
 
 <!-- TOC END -->
@@ -248,7 +256,7 @@ There are basic ways to build an image:
 
 With `docker commit`, you first start a container, log in and make changes inside the container, stop the container and finally commit the changes as a new layer into a new image.
 
-* `docker commit <iamge> <repo-name>:<tag-name>`
+* `docker commit <image> <repo-name>:<tag-name>`
 
 ### Building with Dockerfile, Example 1
 
@@ -471,6 +479,10 @@ The point is developers only need to run the container (no need to install Ruby 
 * Update the post markdown file in the `_posts` directory
 * Watch the server noticing the change and regenerating the web site
 * Refresh the browser
+
+### Changing running container resources
+
+* `docker container update --help` - Change container resources, like memory, CPU, and others
 
 
 ## Docker Compose
@@ -743,7 +755,7 @@ services:
 volumes:
   drupal-data:
   drupal-modules:
-  drupal-profiles:
+  dupal-profiles:
   drupal-themes:
   drupal-sites:
 ```
@@ -766,18 +778,41 @@ web:
 
 ## Swarm Mode
 
-Multi-node container life cycle management and orchestrattion solution, new feature as of summer of 2016.
-* First there was "Swarm classic", before v1.12, just a container repeating commands multiple times.
+Multi-node container life cycle management and orchestration solution, new feature as of summer of 2016.
+
+* First there was "Swarm classic" (before v1.12) just a container repeating commands multiple times.
 * v1.12 Swarm Kit was introduced (Summer 2016).
 * v1.13 Stacks and Secrets were added (Jan 2017).
 
-Swarm is *NOT* enabled by default, to make sure that existing orchestrattion solutions on top of Docker keep working. When enabled, it adds commands:
+Swarm is *NOT* enabled by default, to make sure that existing orchestration solutions on top of Docker keep working.
+
+* `docker info` - Look for "Swarm: inactive"
+
+### `docker swarm init`
+
+* `docker swarm init` - Enable Swarm on the node you are on.
+
+Under the hood init does these:
+
+* PKI and security automation
+    * Root Signing Certificate  created for the Swarn (on the single nore we are on) that will be used to establish trust between all Managers and Workers
+    * Certificate is issued to first Manager node (on this node)
+    * Join tokens are created (to be used on other nodes to join the swarm)
+* Enables the swarm API
+* Creates the "Raft consensus" database (with the RAFT protocol) to store the Root CA, configs and Secrets. Needed to secure node communication in the cloud.
+    * Encrypted by default (v1.13+)
+    * No need for another key/value system to hold orchestration and secrets, all built in
+    * Replicates logs among Managers via mutual TLS in "control plane"
+
+When Swarm is enabled, it adds these commands:
 
 * `docker swarm`
 * `docker node`
 * `docker service`
 * `docker stack`
 * `docker secret`
+
+### Swarm Roles and Definitions
 
 *Manager* - Nodes managing the swarm. There is one *leader* at any given time. If current leader goes down, new manager is elected. Managers all have the swarm configuration in their local database (in memory cache) replicated. Managers communicate among themselves via secured RAFT protocol. There can be maximum 7 managers. Managers send "tasks" to "worker" nodes. Managers decide about which task should run on which worker node. The same node can alsi act as a worker.
 
@@ -792,6 +827,144 @@ Swarm is *NOT* enabled by default, to make sure that existing orchestrattion sol
 > * [Heart of the SwarmKit: Topology Management (slides)](https://speakerdeck.com/aluzzardi/heart-of-the-swarmkit-topology-management)
 > * [Heart of the SwarmKit: Store, Topology & Object Model (YouTube)](https://www.youtube.com/watch?v=EmePhjGnCXY)
 > * [Raft Consensus Visualization (Our Swarm DB and how it stays in sync across nodes)](http://thesecretlivesofdata.com/raft/)
+
+### Create your first service and scale it out
+
+* `docker node ls` - Should bring up the only node in our new swarm, with a mamager that is also the leader.
+* `docker node --help` - commands to bring nodes in and out of the swarm and promoting to managers or demoting to workers
+
+> (Deploy services to a swarm (Docker Docs)) [https://docs.docker.com/engine/swarm/services/]
+
+* `docker service --help`
+* `docker service create alpine ping 8.8.8.8` - Just to create a node and give it some work while we investigate what's going on. Returns the service id (not the container id!)
+* `docker service ls` - We now have one service with 1 replica running
+* `docker service ps my-service-name` - Lists the container along with the NODE info. The name of the container now has a ".1" postfix
+* `docker service update my-service-name --replicas 3` - We are scaling up the number of replics to be 3.
+* `docker service ls` - Should show 3 replicas running (if we are fast enough, we would see the numner goig up approaching 3)
+* `docker service ps my-service-name` - Should show 3 containers (here on the same node)
+
+* `docker service update --help` - A lot more options than the `docker container update` command, becasue it manages the entire cluster of service nodes with the goal of the service always available in the process, like rolling updates (the blue/green process)
+
+### What happens when a container crashes?
+
+The container orchestration system will spawn a new one! Let's try it:
+* `docker container ls` - Find a container id to kill
+* `docker container rm -f my-container-id` - Forceibly kill a container in the swarm
+* `docker service ls` -- You should see "REPLICAS" of 2/3 for a while. Then in a matter of seconds a new container will be launched to replace the failed one.
+* `docker service ps my-service-name` - Should show the failed container as well as the new one.
+
+* `docker service rm my-service-name` - Removes all containers of the service (eventually)
+* `docker container ls` - To verify that the containers are removed (give it a couple of seconds)
+
+### Building a multi-node swarm
+
+Options to experiment:
+
+1. http://play-with-docker.com - Free, browser based, resets after 4 hours, uses docker-in-docker (!), very cool
+2. `docker-machine` + VirtualBox - Node provisioning tool, need at least 8-16GB RAM on the host. Need version 0.10+, comes with Docker Toolbox
+    * `docker-machine create node1` - Created VirtualBox VM (by default) with BusyBox
+    * `docker-machine create node2` - Node 2
+    * `docker-machine create node3` - Node 3
+    * `docker-machine ssh node1` - SSH into the node
+    * `docker-machine env node1` - Lists environment variables to set if you want the `docker` CLI to send command to that node
+    * `docker info` - To verify which node `docker` is talking to
+3. http://digitalotion.com + Docker install - Cloud, fast (SSD), $5-$10/node/month, but there is a coupon!
+4. Roll your own anywhere you can install Docker on, Amazon, Azure, DO, Google, etc.
+
+Let's do a 3 node swarm with digitalocean!
+
+> [Digital Ocean Coupon for $10](https://m.do.co/c/b813dfcad8d4)
+
+Droplet = Server. Use Ububtu 16.04 (long term support, recent Kernel supporting Docker), $10 server should be good
+
+Add your SSH key.
+
+> [Create and Upload a SSH Key to Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-use-ssh-keys-with-digitalocean-droplets)
+
+Create node1, node2, node3. Then use server IP addresses to SSH in, or, use configuration to enable using host names:
+
+> [Configure SSH for Saving Options for Specific Connections](https://www.digitalocean.com/community/tutorials/how-to-configure-custom-connection-options-for-your-ssh-client)
+
+Install Docker with script at http://get.docker.com on each node.
+
+* `curl -sSL https://get.docker.com/ | sh` or
+* `wget -qO- https://get.docker.com/ | sh`
+
+> [Docker Swarm Firewall Ports](http://www.bretfisher.com/docker-swarm-firewall-ports/)
+
+* node1: `docker swarm init --advertise-addr <VISIBLE-IP>`
+* node2: Copy and execute command from node1 output: `docker swarm join --token ... IP:PORT`
+* node1: `docker node ls` - Should have 2 nodes listed
+* node2: `docker node ls` - Should not work, only Managers can access the swarm
+* node1: `docker node update --role manager node1` - promote node2 to be a Manager. Do it for node3 too.
+* node1: `docker node ls` - Should list 2 nodes as Managers (node1 as "Leader", node2 as  "Reachable")
+* node1: `docker swarm join-token manager` - Displays the command to execut to join a node as a manager
+* node3: Execute from the output of above: `docker swarm join --token ... node3` - Join directly as a Manager
+* node1: `docker node ls` - Should list all 3 as Managers.
+
+No need to remember/save tokens, you can always get them with `docker swarm join-token ...`
+
+Join tokens can also be changed, in case they are compromised.
+
+Now we have a 3 node redundant swarm!
+
+* node1: `docker service create alpine --replicas 3 ping 8.8.8.8`
+* node1: `docker service ls` - Should show 3/3 running
+* node1: `docker service ps` - Lists containers running *ONLY* on local node
+* node1: `docker service ps node2` - Lists containers running on specific node
+* node1: `docker service ps my-service-name` - Lists containers running on *ALL* nodes
+
+### Scaling out with overlay networking
+
+* `--driver overlay` - Creates a swarm wide network where containers across multiple nodes can access each other on a VLAN
+* For container-to-container  traffic inside a single swarm
+* Optinal IPSec (AES) tunnel based encryption on network creation, off by default becasue of performance reasons
+* Each service can be added to multiple networks (e.g. front/back)
+
+*Excercise*
+
+* `docker network create --driver overlay my-network`
+* `docker network ls` - should see "ingress" (incoming), "docker_gwbridge" (outgoing) and our "my-network"
+* `docker service create --name psql --network my-network -e POSTGRES_USER=myPass postgres`
+* `docker service create --name drupal --network my-network -p 80:80 drupal`
+* `watch docker service ls` - See service eventally start
+* Go to the IP address in the browser to set up Drupal, point to "psql" as the db server name
+
+### Scaling Out with Routing Mesh
+
+It does not matter which IP address you use for accessing Drupal, eventhough it is running on a single node. This is thanks to Routing Mesh.
+
+*Rounting Mesh* is an incoming (ingress) packet dictribution among Taks for a Service. It is on out-of-the-box.
+
+* Spawns *ALL* nodes in the swarm
+* Uses IPVS Kerner primitives from the Linux Kernel (core Linux Kernel feature that has been around for a long time)
+* Load balances on ALL the nodes and listening on all the nodes for traffic
+* Works two ways:
+    * Container-to-container in an Overlay network, using VIP (private Virtual IP that is placed in front of each service) so services can talk to each other without an external load balancer (!)
+    * External incoming traffic going to published ports (all nodes listen). The decision of which node will service the incoming request is handled by the Routing Mesh, it can choose any of the Workders. Note that containers can fail and recreated on different nodes, we want it to work without changing DNS and firewall settings.
+
+VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighthing DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
+
+> ( Use swarm mode routing mesh (Docker Docs))[https://docs.docker.com/engine/swarm/ingress/]
+
+*Excercise with elasticsearch*
+
+* `docker service create --name search --replicas 3 -p 9200:9200 elasticserch:2` - v2 is the easiest to deploy :)
+* `docker service ps search` - Each task should be created on a different node.
+* `curl localhost:9200` - Repeate this multiple times to see that each time a different node responds (look for "name" in the JSON)
+
+* It is a *stateless* load balancer (as of v17.03). No session cookies can be used.
+* It is a OSI Layer 3 (TCP), not Layer 4 (DNS) load balancer
+* Both above limitations can be overcome:
+    * Nginx or HAProxy LB Proxy, or
+    * Docker Enterprise Edition comes with L4 LB
+
+*Excersice with Docker's Distributed Voting Demo App (Dogs vs Cats)*
+
+> https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/swarm-app-1
+
+* ``
+
 
 
 ## Extra
