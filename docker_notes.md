@@ -833,7 +833,7 @@ When Swarm is enabled, it adds these commands:
 * `docker node ls` - Should bring up the only node in our new swarm, with a mamager that is also the leader.
 * `docker node --help` - commands to bring nodes in and out of the swarm and promoting to managers or demoting to workers
 
-> (Deploy services to a swarm (Docker Docs)) [https://docs.docker.com/engine/swarm/services/]
+> [Deploy services to a swarm (Docker Docs)] (https://docs.docker.com/engine/swarm/services/)
 
 * `docker service --help`
 * `docker service create alpine ping 8.8.8.8` - Just to create a node and give it some work while we investigate what's going on. Returns the service id (not the container id!)
