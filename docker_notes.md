@@ -40,7 +40,9 @@
     - [Building a multi-node swarm](#building-a-multi-node-swarm)
     - [Scaling out with overlay networking](#scaling-out-with-overlay-networking)
     - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
-  - [Extra goodies](#extra-goodies)
+    - [Stacks](#stacks)
+    - [Secrets](#secrets)
+  - [Extra random goodies](#extra-random-goodies)
 
 <!-- TOC END -->
 
@@ -974,15 +976,199 @@ The "vote" and "redis" modules are on a "front" network, the "db" and "result" m
 
 These are the steps to make all these happen (after the swarm is up):
 
+1. `docker network create front --driver overlay`
+1. `docker network create back --driver overlay`
 1. `docker service create --name redis  --network front --replicas 2 redis:3.2`
 1. `docker service create --name db     --network back --mount type=volume,source=db-data,target=/var/lib/postgresql/data postgres:9.4`
 1. `docker service create --name worker --network front --network back --replicas 1 dockersamples/examplevotingapp_worker`
 1. `docker service create --name vote   --network front --replicas 2 -p 80:80 dockersamples/examplevotingapp_vote:before`
 1. `docker service create --name result --network back -p 5001:80 dockersamples/examplevotingapp_result:before`
 
+### Stacks
 
-## Extra goodies
+* Represents stacks of servies, networks and volumes, kind of compose files for Swarms. In fact Stacks accepts compose files as its input.
+* Compose file has to be version 3 or higher
+* Added in v1.13
+* 1 Stack is for 1 Swarm
+* `docker stack deploy` manages deployment (instead of using `docker service create`).
+* It prefixes the stack name in front of the service/network/volume names.
+* The compose file now has the `deploy:` instruction to specify swarm specific configuration (replicas, fail over, etc.). On the other hand it no longer executes `build:` instructions.
+* Compose and Stack get along fine working with the same compose file: Compose ignores the `deploy:` part, Stack ignores the `build:` part.
+* `docker-compose` cli does not need to be on the Swarm.
 
-* https://circleci.com/ can do continuous build/test/deploy of a Docker container, triggered by Github/Bitbucket changes, 1 container FREE.
-* https://codeship.com can do pretty much the same
-* https://www.digitalocean.com/pricing/ is like https://aws.amazon.com/ec2/pricing/on-demand/
+*Exercise: The above voting app with Stacks*
+
+*example-voting-app-stack.yml*
+```yaml
+version: "3"
+services:
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379"
+    networks:
+      - frontend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  db:
+    image: postgres:9.4
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  vote:
+    image: dockersamples/examplevotingapp_vote:before
+    ports:
+      - 5000:80
+    networks:
+      - frontend
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+      restart_policy:
+        condition: on-failure
+  result:
+    image: dockersamples/examplevotingapp_result:before
+    ports:
+      - 5001:80
+    networks:
+      - backend
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  worker:
+    image: dockersamples/examplevotingapp_worker
+    networks:
+      - frontend
+      - backend
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels: [APP=VOTING]
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints: [node.role == manager]
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  db-data:
+```
+
+There is a new service in there caller `visualizer` on port 8080 that shows the nodes and the running cotainers within.
+
+Execute with:
+* `docker stack deploy -c example-voting-app-stack.yml voteapp`
+* `docker stack ls` - Lists number of services
+* `docker stack ps voteapp` - Lists task runnig on all the nodes
+* `docker stack services voteapp`- List per service
+
+* `docker stack deploy -c example-voting-app-stack.yml voteapp` Rerun the same command after changing the compose file will update the stack as needed (for example scale as per the change). This is not a good practice becasue the file retains the changes probably meant to be executed once.
+
+### Secrets
+
+Protects secrets within Docker like these:
+* Usernames, passwords
+* TLS certificaets and keys
+* SSH keys
+* Any data
+
+* The Swarm Raft database is encrypted on disj by default (as of Docker v1.13.0)
+* Only stored on disk on Manager nodes
+* Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication
+* Secrets are fist stored in Swarm, then assigned to Services that need them
+* Only containers that were assigned can see the Secrets
+
+Secrets look like files, but they mounted from an in-memory RAM FS at these locations:
+* `/run/secrets/<secret_name>` or
+* `/run/secrets/<secret_alias>`
+The file name is the key, the value is the file content.
+
+Local `docker-compose` based development can use real disk file-based secrets, they will work, but obviously it is **not secure**.
+
+* `docker secret create psql_user psql_user.txt` - Adds the secret from a file
+* `echo "MyPassword" | docker secret create psql_user -` - Adds the secret from STDIN (that's what the `-` at the end is for)
+
+None of the above two methods are secure. The first one stores the secret in a file on the disk, the second one adds the secret to the basj history. Not good for production!
+
+* `docker secret inspect psql_user` - JSON metadata (does not give away the secret :) )
+* `docker service create --name psql --secret psql_user --secret psql_pass -e POSTGRES_USER_FILE=/run/secrets/psql_user -e POSTGRES_PASSWORD_FILE=/run/secrets/psql_pass postgres` - By convention the `_FILE` postfix will replace the original env variable.
+* `docker exec -it psql.1.... bash`, then `ls /run/secrets` should show the two files.
+* `docker container logs pswl.1.... ` - should show the db starting up ok
+
+* `docker service update --secret-rm ...` - remove. It will redeploy the container without the secret!
+
+
+## Extra random goodies
+
+*Related services, alternatives*
+
+> * https://cloud.docker.com/ - Continuous integration, delivery, registry management in the cloud. Includes one free private repository.
+
+> * https://coreos.com/rkt - Pronounced as "rocket", alternative to Docker. [`rkt` comparing itself to others](https://coreos.com/rkt/docs/latest/rkt-vs-other-projects.html)
+> * [Blog: Moving from Docker to rkt](https://medium.com/@adriaandejonge/moving-from-docker-to-rkt-310dc9aec938)
+
+> * https://kubernetes.io/ - Google backed container orchestration (works with Docker and Rkt)
+
+> * https://deis.com/ - Kubernetes based tools
+
+*Dev Tools to experiment with*
+
+> * https://circleci.com/ can do continuous build/test/deploy of a Docker container, triggered by Github/Bitbucket changes, 1 container FREE.
+> * https://codeship.com can do pretty much the same
+> * https://www.digitalocean.com/pricing/ is a service much like https://aws.amazon.com/ec2/pricing/on-demand/
+> * [Digital Ocean Coupon for $10](https://m.do.co/c/b813dfcad8d4)
+> * [Another Digital Ocean Coupon for $10](https://www.digitalocean.com/?refcode=0a14c0d916b3)
+
+*Monitoring*
+
+...other than `docker stats` and `docker service logs`
+
+> * [cadvisor](https://github.com/google/cadvisor) - "Container Advisor", real time resource usage and performance data monitoring (fancy verion of `docker stats` on a web page). Backed by Google. Simple, runs as a container alongside of the other containers, no historical data, not meant to be for production.
+> * [DataDog](https://www.datadoghq.com/) - Good for production. Free for 5 hosts (1 day data retention). Need to install agents. Alerts too.
+
+> * [logspout](https://github.com/gliderlabs/logspout) - a log router for Docker containers that runs inside Docker. Runs in a container itself. It attaches to all containers on a host, then routes their logs wherever you want. It's a mostly stateless log appliance. It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
+> * [papertrail](https://papertrailapp.com/) - Log management in the cloud. Free for 7 days retention (48 hours search) 100MB/**month** (!)
+> * [loggly](https://www.loggly.com/) - Log management in the cloud. Free for 7 days retention up to 200MB/**day** (!)
+
+*Public domain related services*
+
+> * http://internetbs.net - Domain name regisrar charging $9/year for `.com`, *including* whois protection. Hosted outseide the U.S..
+> * https://letsencrypt.org/ - Free, real SSL/TLS Certificates (with 90 days validity)
+> * https://www.ssllabs.com/ssltest/ - SSL test for web sites. You should see A+ rating!
