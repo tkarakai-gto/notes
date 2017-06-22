@@ -1109,11 +1109,15 @@ Protects secrets within Docker like these:
 * SSH keys
 * Any data
 
-* The Swarm Raft database is encrypted on disj by default (as of Docker v1.13.0)
-* Only stored on disk on Manager nodes
-* Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication
-* Secrets are fist stored in Swarm, then assigned to Services that need them
-* Only containers that were assigned can see the Secrets
+The Swarm Raft database is encrypted on disk by default (as of Docker v1.13.0).
+
+Only stored on disk on Manager nodes.
+
+Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication.
+
+Secrets are fist stored in Swarm, then assigned to Services that need them.
+
+Only containers that were assigned can see the Secrets.
 
 Secrets look like files, but they mounted from an in-memory RAM FS at these locations:
 * `/run/secrets/<secret_name>` or
