@@ -1109,11 +1109,15 @@ Protects secrets within Docker like these:
 * SSH keys
 * Any data
 
-* The Swarm Raft database is encrypted on disj by default (as of Docker v1.13.0)
-* Only stored on disk on Manager nodes
-* Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication
-* Secrets are fist stored in Swarm, then assigned to Services that need them
-* Only containers that were assigned can see the Secrets
+The Swarm Raft database is encrypted on disk by default (as of Docker v1.13.0).
+
+Only stored on disk on Manager nodes.
+
+Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication.
+
+Secrets are fist stored in Swarm, then assigned to Services that need them.
+
+Only containers that were assigned can see the Secrets.
 
 Secrets look like files, but they mounted from an in-memory RAM FS at these locations:
 * `/run/secrets/<secret_name>` or
@@ -1130,7 +1134,7 @@ None of the above two methods are secure. The first one stores the secret in a f
 * `docker secret inspect psql_user` - JSON metadata (does not give away the secret :) )
 * `docker service create --name psql --secret psql_user --secret psql_pass -e POSTGRES_USER_FILE=/run/secrets/psql_user -e POSTGRES_PASSWORD_FILE=/run/secrets/psql_pass postgres` - By convention the `_FILE` postfix will replace the original env variable.
 * `docker exec -it psql.1.... bash`, then `ls /run/secrets` should show the two files.
-* `docker container logs pswl.1.... ` - should show the db starting up ok
+* `docker container logs psql.1.... ` - should show the db starting up ok
 
 * `docker service update --secret-rm ...` - remove. It will redeploy the container without the secret!
 
