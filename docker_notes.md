@@ -40,7 +40,7 @@
     - [Building a multi-node swarm](#building-a-multi-node-swarm)
     - [Scaling out with overlay networking](#scaling-out-with-overlay-networking)
     - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
-  - [Extra](#extra)
+  - [Extra goodies](#extra-goodies)
 
 <!-- TOC END -->
 
@@ -860,7 +860,7 @@ The container orchestration system will spawn a new one! Let's try it:
 
 Options to experiment:
 
-1. http://play-with-docker.com - Free, browser based, resets after 4 hours, uses docker-in-docker (!), very cool
+1. http://play-with-docker.com - Free, browser based, resets after 4 hours, uses docker-in-docker (!), very cool!
 2. `docker-machine` + VirtualBox - Node provisioning tool, need at least 8-16GB RAM on the host. Need version 0.10+, comes with Docker Toolbox
     * `docker-machine create node1` - Created VirtualBox VM (by default) with BusyBox
     * `docker-machine create node2` - Node 2
@@ -963,11 +963,25 @@ VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS
 
 > https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/swarm-app-1
 
-* ``
+In the excersice (created by Docker as an example app) there are 5 modules:
+* "vote" - the app that accepts user input (voting if you like dogs or cats)
+* "redis" - where the "vote" app pushes the votes
+* "worker" - the component that monitors "redis" for new data and pushes them to the "db"
+* "db" - SQL db to store the votes
+* "result" - Monitoring dashboard to see current voting stats
+
+The "vote" and "redis" modules are on a "front" network, the "db" and "result" modules are on the "back" network, and the "worker" is on both network.
+
+These are the steps to make all these happen (after the swarm is up):
+
+1. `docker service create --name redis  --network front --replicas 2 redis:3.2`
+1. `docker service create --name db     --network back --mount type=volume,source=db-data,target=/var/lib/postgresql/data postgres:9.4`
+1. `docker service create --name worker --network front --network back --replicas 1 dockersamples/examplevotingapp_worker`
+1. `docker service create --name vote   --network front --replicas 2 -p 80:80 dockersamples/examplevotingapp_vote:before`
+1. `docker service create --name result --network back -p 5001:80 dockersamples/examplevotingapp_result:before`
 
 
-
-## Extra
+## Extra goodies
 
 * https://circleci.com/ can do continiuous build/test/deploy of a Docker container, trigered by Github/Bitbucket chamges, 1 container FREE.
 * https://codeship.com can do pretty much the same
