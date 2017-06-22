@@ -56,7 +56,7 @@ Docker version format changed early 2017. Versions are now YY.MM  based (like Ub
 
 *Client* - The command line client talking to the server using an API
 
-*Server* - Docker Engine a.k.a. the Docker Server answering to the API requests and running docker functions
+*Server* - Docker Engine a.k.a. the Docker Server answering to the API requests and running Docker functions
 
 * `docker info` - More detailed info, including stats, drivers, etc.
 
@@ -260,7 +260,7 @@ With `docker commit`, you first start a container, log in and make changes insid
 
 ### Building with Dockerfile, Example 1
 
-The `Dockerfile` (the file named as such, with no extention) is a recipe for creating a Docker image. It contains "instructions". The instructions names a uppercased by convention (not required).
+The `Dockerfile` (the file named as such, with no extension) is a recipe for creating a Docker image. It contains "instructions". The instructions names a uppercased by convention (not required).
 
 > https://docs.docker.com/engine/reference/builder/
 
@@ -268,7 +268,7 @@ The build starts on the Docker Client, so the build context (all the files neede
 
 Once the Docker Engine receives the build context, it starts a new container, executes the instructions, commits the new layer for each one, then at the end it stops and deletes the container.
 
-Let's start with some basid `Dockerfile` instructions:
+Let's start with some basic `Dockerfile` instructions:
 
 * `FROM` - Base image. must be the first instruction in `Dockerfile`
 * `ENV` - Set environment variables. This is the way set keys and values to inject.
@@ -279,7 +279,7 @@ Let's start with some basid `Dockerfile` instructions:
 
 The proper way to log is *NOT* to log to a log file, and there is no syslogd aor other syslog server either, Docker actually handles all the logging for us. All we have to do is all our logs are spit out into STDIN and STDERR. See second `RUN` command below.
 
-* `EXPOSE` - Expose ports withing the virtual network (not yet to the outside!)
+* `EXPOSE` - Expose ports within the virtual network (not yet to the outside!)
 * `CMD` - The default command to run every time the container is started or restarted (at runtime, not build time). Can be owerwritten with the command specified on the `docker container run` command.
 
 *Dockerfile*
@@ -354,8 +354,8 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 
 * `WORKDIR` - Staring root dir. Preferred to using `RUN cd /path`
 * `COPY` - Copies file from the builder current directory (client side) to the image current dir.
-* `ADD` - Similar to `COPY` but can add files from a URL, it can decompress source files. Generally less transparent than `COPY`, so it is less prefered.
-* Use the `.dockerignore` file to exclude files to be copyed with `COPY` and `ADD`
+* `ADD` - Similar to `COPY` but can add files from a URL, it can decompress source files. Generally less transparent than `COPY`, so it is less preferred.
+* Use the `.dockerignore` file to exclude files to be copied with `COPY` and `ADD`
 
 * `USER` - Sets the user name or UID to use when running the image and for any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile. *Highly recommended to set to a nonpriviledged user.* For example use something like `RUN useradd -ms /bin/bash mynewuser` before the `USER` instruction.
 
@@ -368,7 +368,7 @@ FROM nginx:latest
 
 WORKDIR /usr/share/nginx/html
 # change working directory to root of nginx webhost
-# using WORKDIR is prefered to using 'RUN cd /some/path'
+# using WORKDIR is preferred to using 'RUN cd /some/path'
 
 COPY index.html index.html
 
@@ -795,7 +795,7 @@ Swarm is *NOT* enabled by default, to make sure that existing orchestration solu
 Under the hood init does these:
 
 * PKI and security automation
-    * Root Signing Certificate  created for the Swarn (on the single nore we are on) that will be used to establish trust between all Managers and Workers
+    * Root Signing Certificate  created for the Swarn (on the single node we are on) that will be used to establish trust between all Managers and Workers
     * Certificate is issued to first Manager node (on this node)
     * Join tokens are created (to be used on other nodes to join the swarm)
 * Enables the swarm API
@@ -814,7 +814,7 @@ When Swarm is enabled, it adds these commands:
 
 ### Swarm Roles and Definitions
 
-*Manager* - Nodes managing the swarm. There is one *leader* at any given time. If current leader goes down, new manager is elected. Managers all have the swarm configuration in their local database (in memory cache) replicated. Managers communicate among themselves via secured RAFT protocol. There can be maximum 7 managers. Managers send "tasks" to "worker" nodes. Managers decide about which task should run on which worker node. The same node can alsi act as a worker.
+*Manager* - Nodes managing the swarm. There is one *leader* at any given time. If current leader goes down, new manager is elected. Managers all have the swarm configuration in their local database (in memory cache) replicated. Managers communicate among themselves via secured RAFT protocol. There can be maximum 7 managers. Managers send "tasks" to "worker" nodes. Managers decide about which task should run on which worker node. The same node can also act as a worker.
 
 *Worker* - Node connected to a Manager accepting work to be executed and reporting back to the manager with the execution status.
 
@@ -830,7 +830,7 @@ When Swarm is enabled, it adds these commands:
 
 ### Create your first service and scale it out
 
-* `docker node ls` - Should bring up the only node in our new swarm, with a mamager that is also the leader.
+* `docker node ls` - Should bring up the only node in our new swarm, with a manager that is also the leader.
 * `docker node --help` - commands to bring nodes in and out of the swarm and promoting to managers or demoting to workers
 
 > [Deploy services to a swarm (Docker Docs)](https://docs.docker.com/engine/swarm/services/)
@@ -839,11 +839,11 @@ When Swarm is enabled, it adds these commands:
 * `docker service create alpine ping 8.8.8.8` - Just to create a node and give it some work while we investigate what's going on. Returns the service id (not the container id!)
 * `docker service ls` - We now have one service with 1 replica running
 * `docker service ps my-service-name` - Lists the container along with the NODE info. The name of the container now has a ".1" postfix
-* `docker service update my-service-name --replicas 3` - We are scaling up the number of replics to be 3.
-* `docker service ls` - Should show 3 replicas running (if we are fast enough, we would see the numner goig up approaching 3)
+* `docker service update my-service-name --replicas 3` - We are scaling up the number of replicas to be 3.
+* `docker service ls` - Should show 3 replicas running (if we are fast enough, we would see the number going up approaching 3)
 * `docker service ps my-service-name` - Should show 3 containers (here on the same node)
 
-* `docker service update --help` - A lot more options than the `docker container update` command, becasue it manages the entire cluster of service nodes with the goal of the service always available in the process, like rolling updates (the blue/green process)
+* `docker service update --help` - A lot more options than the `docker container update` command, because it manages the entire cluster of service nodes with the goal of the service always available in the process, like rolling updates (the blue/green process)
 
 ### What happens when a container crashes?
 
@@ -868,7 +868,7 @@ Options to experiment:
     * `docker-machine ssh node1` - SSH into the node
     * `docker-machine env node1` - Lists environment variables to set if you want the `docker` CLI to send command to that node
     * `docker info` - To verify which node `docker` is talking to
-3. http://digitalotion.com + Docker install - Cloud, fast (SSD), $5-$10/node/month, but there is a coupon!
+3. http://digitalocean.com + Docker install - Cloud, fast (SSD), $5-$10/node/month, but there is a coupon!
 4. Roll your own anywhere you can install Docker on, Amazon, Azure, DO, Google, etc.
 
 Let's do a 3 node swarm with digitalocean!
@@ -918,10 +918,10 @@ Now we have a 3 node redundant swarm!
 
 * `--driver overlay` - Creates a swarm wide network where containers across multiple nodes can access each other on a VLAN
 * For container-to-container  traffic inside a single swarm
-* Optinal IPSec (AES) tunnel based encryption on network creation, off by default becasue of performance reasons
+* Optinal IPSec (AES) tunnel based encryption on network creation, off by default because of performance reasons
 * Each service can be added to multiple networks (e.g. front/back)
 
-*Excercise*
+*Exercise*
 
 * `docker network create --driver overlay my-network`
 * `docker network ls` - should see "ingress" (incoming), "docker_gwbridge" (outgoing) and our "my-network"
@@ -932,26 +932,26 @@ Now we have a 3 node redundant swarm!
 
 ### Scaling Out with Routing Mesh
 
-It does not matter which IP address you use for accessing Drupal, eventhough it is running on a single node. This is thanks to Routing Mesh.
+It does not matter which IP address you use for accessing Drupal, even though it is running on a single node. This is thanks to Routing Mesh.
 
-*Rounting Mesh* is an incoming (ingress) packet dictribution among Taks for a Service. It is on out-of-the-box.
+*Routing Mesh* is an incoming (ingress) packet distribution among Task for a Service. It is on out-of-the-box.
 
 * Spawns *ALL* nodes in the swarm
-* Uses IPVS Kerner primitives from the Linux Kernel (core Linux Kernel feature that has been around for a long time)
+* Uses IPVS Kernel primitives from the Linux Kernel (core Linux Kernel feature that has been around for a long time)
 * Load balances on ALL the nodes and listening on all the nodes for traffic
 * Works two ways:
     * Container-to-container in an Overlay network, using VIP (private Virtual IP that is placed in front of each service) so services can talk to each other without an external load balancer (!)
-    * External incoming traffic going to published ports (all nodes listen). The decision of which node will service the incoming request is handled by the Routing Mesh, it can choose any of the Workders. Note that containers can fail and recreated on different nodes, we want it to work without changing DNS and firewall settings.
+    * External incoming traffic going to published ports (all nodes listen). The decision of which node will service the incoming request is handled by the Routing Mesh, it can choose any of the Workers. Note that containers can fail and recreated on different nodes, we want it to work without changing DNS and firewall settings.
 
-VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighthing DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
+VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighting DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
 
 > [Use swarm mode routing mesh (Docker Docs)](https://docs.docker.com/engine/swarm/ingress/)
 
-*Excercise with elasticsearch*
+*Exercise with elasticsearch*
 
 * `docker service create --name search --replicas 3 -p 9200:9200 elasticserch:2` - v2 is the easiest to deploy :)
 * `docker service ps search` - Each task should be created on a different node.
-* `curl localhost:9200` - Repeate this multiple times to see that each time a different node responds (look for "name" in the JSON)
+* `curl localhost:9200` - Repeat this multiple times to see that each time a different node responds (look for "name" in the JSON)
 
 * It is a *stateless* load balancer (as of v17.03). No session cookies can be used.
 * It is a OSI Layer 3 (TCP), not Layer 4 (DNS) load balancer
@@ -959,11 +959,11 @@ VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS
     * Nginx or HAProxy LB Proxy, or
     * Docker Enterprise Edition comes with L4 LB
 
-*Excersice with Docker's Distributed Voting Demo App (Dogs vs Cats)*
+*Exercise with Docker's Distributed Voting Demo App (Dogs vs Cats)*
 
 > https://github.com/tkarakai-gto/udemy-docker-mastery/tree/master/swarm-app-1
 
-In the excersice (created by Docker as an example app) there are 5 modules:
+In the exercise (created by Docker as an example app) there are 5 modules:
 * "vote" - the app that accepts user input (voting if you like dogs or cats)
 * "redis" - where the "vote" app pushes the votes
 * "worker" - the component that monitors "redis" for new data and pushes them to the "db"
@@ -983,6 +983,6 @@ These are the steps to make all these happen (after the swarm is up):
 
 ## Extra goodies
 
-* https://circleci.com/ can do continiuous build/test/deploy of a Docker container, trigered by Github/Bitbucket chamges, 1 container FREE.
+* https://circleci.com/ can do continuous build/test/deploy of a Docker container, triggered by Github/Bitbucket changes, 1 container FREE.
 * https://codeship.com can do pretty much the same
 * https://www.digitalocean.com/pricing/ is like https://aws.amazon.com/ec2/pricing/on-demand/
