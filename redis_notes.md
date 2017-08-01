@@ -26,7 +26,7 @@
 
 ## As a database:
  - In addition to String it also has: list, set, sorted set, hash (+bitmap +hyperloglog)
- - 160 high perdformant commands (server side execution)
+ - 180 high perdformant commands (server side execution)
  - PubSub (browsers subscribe to events with node.js)
  - LUA scripting and modules add flexibility (LUA compiles into memory)
  - Can be used as 1st class database
