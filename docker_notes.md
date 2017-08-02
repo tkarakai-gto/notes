@@ -42,6 +42,15 @@
     - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
     - [Stacks](#stacks)
     - [Secrets](#secrets)
+    - [Secrets with Swarm Stacks](#secrets-with-swarm-stacks)
+    - [Secrets for local development](#secrets-for-local-development)
+    - [Full App lifecycle with Compose](#full-app-lifecycle-with-compose)
+  - [Image Storage and Distribution](#image-storage-and-distribution)
+    - [Docker Hub](#docker-hub-1)
+    - [Docker Store](#docker-store)
+    - [Docker Cloud](#docker-cloud)
+    - [Docker Registry (open source)](#docker-registry-open-source)
+    - [Registry on a Swarm](#registry-on-a-swarm)
   - [Extra random goodies](#extra-random-goodies)
 
 <!-- TOC END -->
@@ -1255,7 +1264,7 @@ services:
       - drupal-profiles:/var/www/html/profiles
       - drupal-sites:/var/www/html/sites
       - ./themes:/var/www/html/themes          ## DEV ONLY to bind local dev files mounted
- 
+
   postgres:
     environment:
       - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
@@ -1298,7 +1307,7 @@ services:
       - psql-pw
     volumes:
       - ./sample-data:/var/lib/postgresql/data   # Preloaded standard data for testing
-      
+
 secrets:
   psql-pw:
     file: psql-fake-password.txt
@@ -1320,7 +1329,7 @@ services:
       - drupal-profiles:/var/www/html/profiles
       - drupal-sites:/var/www/html/sites
       - drupal-themes:/var/www/html/themes
- 
+
   postgres:
     environment:
       - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
