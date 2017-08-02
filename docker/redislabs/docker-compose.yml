@@ -1,0 +1,54 @@
+version: '2.1'
+# docker-compose version 3 does not support "mem_*" options, they are reworked
+# in swarm mode, but cannot be used in non-swarm mode, so we are stuck in
+# compose version 2
+
+# After start, you have to go to these URLs and configure each node (assuming Docker Toolbox):
+# https://192.168.99.100:8001
+# https://192.168.99.100:8002
+# https://192.168.99.100:8003
+
+# THIS SETUP DOES NOT SURVIVE `docker-compose stop`, maybe the redis services are
+# not configured to start up automatically, or becasue of other reasons...
+# No time to investigate :(
+
+services:
+
+  redislabs-1:
+    image: redislabs/redis  # needs min 1gb RAM
+    ports:
+      - "8001:8443"
+      - "12001:12000"
+    mem_reservation: 1030000000 # only works in compose version 2
+    mem_limit: 1030000000       # only works in compose version 2
+    memswap_limit: 1030000000   # only works in compose version 2
+    #deploy:                    # only works in compose version 3+, swarm mode
+    #  resources:
+    #    reservations:
+    #      memory: 1030000000
+    #    limits:
+    #      memory: 1030000000
+    cap_add:
+      - SYS_RESOURCE
+
+  redislabs-2:
+    image: redislabs/redis
+    ports:
+      - "8002:8443"
+      - "12002:12000"
+    mem_reservation: 1030000000
+    mem_limit: 1030000000
+    memswap_limit: 1030000000
+    cap_add:
+      - SYS_RESOURCE
+
+  redislabs-3:
+    image: redislabs/redis
+    ports:
+      - "8003:8443"
+      - "12003:12000"
+    mem_reservation: 1030000000
+    mem_limit: 1030000000
+    memswap_limit: 1030000000
+    cap_add:
+      - SYS_RESOURCE

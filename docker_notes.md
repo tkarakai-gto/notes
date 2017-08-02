@@ -1176,3 +1176,7 @@ None of the above two methods are secure. The first one stores the secret in a f
 > * http://internetbs.net - Domain name regisrar charging $9/year for `.com`, *including* whois protection. Hosted outseide the U.S..
 > * https://letsencrypt.org/ - Free, real SSL/TLS Certificates (with 90 days validity)
 > * https://www.ssllabs.com/ssltest/ - SSL test for web sites. You should see A+ rating!
+
+*How to upgrade Docker Engine in Docker Toolbox*
+
+* When you upgrade Docker Toolbox (on an old Windows 7 laptop), it only upgrades the Docker Client. Do `docker version` to verify. In order to upgrade the Docker server (Engine) you need to issue `docker-machine upgrade default` (if yours is called "default")
