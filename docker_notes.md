@@ -1109,11 +1109,13 @@ Protects secrets within Docker like these:
 * SSH keys
 * Any data
 
+Up to 512kb in size.
+
 The Swarm Raft database is encrypted on disk by default (as of Docker v1.13.0).
 
 Only stored on disk on Manager nodes.
 
-Default is Managers and Workers usi the "control plane" to communicate with TLS and Mutual Authentication.
+Default is Managers and Workers use the "control plane" to communicate with TLS and Mutual Authentication.
 
 Secrets are fist stored in Swarm, then assigned to Services that need them.
 
@@ -1137,6 +1139,268 @@ None of the above two methods are secure. The first one stores the secret in a f
 * `docker container logs psql.1.... ` - should show the db starting up ok
 
 * `docker service update --secret-rm ...` - remove. It will redeploy the container without the secret!
+
+### Secrets with Swarm Stacks
+
+Secrets with Stacks must be version 3.1 or newer.
+
+*docker-compose.yml*
+```
+version: "3.1"
+
+services:
+  psql:
+    image: postgres
+    secrets:
+      - psql_user
+      - psql_password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/psql_password
+      POSTGRES_USER_FILE: /run/secrets/psql_user
+
+secrets:
+  psql_user:
+    file: ./psql_user.txt
+  psql_password:
+    file: ./psql_password.txt
+```
+Secrets are assigned to the services that need them. The "short form" is shown above, there is a "long form" that allows specifying the user/permissions in the Linux syntax, targetting specific (non-root) users.
+
+The `secret` section is either `file` based (as shown above) or `external` when the secrets are precreated (like with the CLI).
+
+* `docker stack deploy -c docker-compose.yml mydb` - Creates the secrets fists, then the network, then the services.
+
+Don't forget to clean up the secrets after the services are gone!
+
+*docker-compose.yml* - modified to use external secrets
+```
+version: '3.1'
+
+services:
+
+  drupal:
+    build: .           # Build using the default Dockerfile in the current directory
+    image: drupal:8.2  # If both 'image' and 'build' are specified, Compose will name the built image as per 'image' line
+    ports:
+      - 8080:80
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-themes:/var/www/html/themes
+      - drupal-sites:/var/www/html/sites
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/psql-usr
+      - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data:
+  drupal-modules:
+  drupal-profiles:
+  drupal-themes:
+  drupal-sites:
+
+secrets:
+  psql-usr:
+    external: true
+  psql-pw:
+    external: true
+```
+
+* `echo "myUser" | dokcer secret create psql-usr -`
+* `echo "myPassword" | dokcer secret create psql-pw -`
+* `docker stack deploy -c docker-compose.yml drupal`
+
+
+### Secrets for local development
+
+Use the same compose file!
+
+* `docker-compose up -d`
+* `docker-compose exec psql cat /run/secrets/psql_user` - should output the content of the secret file, just like if we were in a swarm. This is becasue secrets are automatically bind mounted to the containers by Docker. This is absolutely *NOT secure*, but it works for dev. This only works for file based secrets, not for the `external` ones. This is cool, because now the secrets can be used the same way in dev as on production, with the same compose files.
+
+
+### Full App lifecycle with Compose
+
+Single set of compose files as the complexity increases.
+
+*docker-compose.yml* - Base compose file
+```
+version: '3.1'
+
+services:
+
+  drupal:
+    image: bretfisher/custom-drupal:latest
+
+  postgres:
+    image: postgres:9.6
+```
+
+*docker-compose.override.yml* - if present, this will overrides `docker-compose.yml`, for development
+```
+version: '3.1'
+
+services:
+
+  drupal:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-sites:/var/www/html/sites
+      - ./themes:/var/www/html/themes          ## DEV ONLY to bind local dev files mounted
+ 
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
+    secrets:
+      - psql-pw
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+secrets:
+  psql-pw:
+    file: psql-fake-password.txt   ## for DEV we have to use the file based secrets
+```
+
+* `docker-compose up` for local development with the above files
+
+*docker-compose.test.yml* - for CI/Jenkins solution
+```
+version: '3.1'
+
+services:
+
+  drupal:
+    image: bretfisher/custom-drupal
+    build: .
+    ports:
+      - "80:80"
+    # No volumes needed for test/CI, it will get rid of them when container is done
+
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
+    secrets:
+      - psql-pw
+    volumes:
+      - ./sample-data:/var/lib/postgresql/data   # Preloaded standard data for testing
+      
+secrets:
+  psql-pw:
+    file: psql-fake-password.txt
+```
+
+* `docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d` for CI/testing, specifying compose files explicitely, in the order of base -> overriding files.
+
+*docker-compose.prod.yml*
+```
+version: '3.1'
+
+services:
+
+  drupal:
+    ports:
+      - "80:80"
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-sites:/var/www/html/sites
+      - drupal-themes:/var/www/html/themes
+ 
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/psql-pw
+    secrets:
+      - psql-pw
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+secrets:
+  psql-pw:
+    external: true
+```
+
+* `docker-compose -f docker-compose.yml -f docker-compose.prod.yml config > prod.yml` - generates a "combined" YAML file, should be run by the CI solution to output to a place ready for Prod.
+* `docker stack deploy ...`
+
+* `extends` doesn't work in Stacks yet (June, 2017)
+
+> * [Using Multiple Compose Files (Docker Docs)](https://docs.docker.com/compose/extends/#multiple-compose-files)
+> * [Using Compose Filed in Production (Docker Docs)](https://docs.docker.com/compose/production/)
+
+
+## Image Storage and Distribution
+
+They are meant to be part of the Docker ecosystem, copying images in ZIP files is not really a good solution.
+
+### Docker Hub
+
+Docker Hub is not the only public registry! It is the most popular. It has storage plus building capabilities. Docker Hub can detect repository changes in GitHub or BitBucket! It can also rebuild your images every time one of your dependencies (the `FROM` image) are updated.
+
+### Docker Store
+
+* New as of 2016.
+* Docker software. It's like Apple App Store, controlled by Docker the company
+* Some Certified, some paid for
+
+### Docker Cloud
+
+* NOT a cloud hoster
+* Web based orchestration/management system for your Docker swarms and clusters. It helps create/manage stack, services in Amazon, Azure, etc.
+* Automated uilds $$
+* Security scan of images $$
+
+### Docker Registry (open source)
+
+* Written in `go`
+* No UI, more like an HTTPS server
+* Default port: 5000
+* Can act as a registry proxy to cahce images pulled through Docker Hub
+* By deault it uses TLS, unless talking to localhost
+
+* `docker container run -d -p5000:5000 --name registry registry` - That's it.
+* `docker image tag hello-world 127.0.0.1:5000/hello world` - Tags it in the local registry
+* `docker image push 127.0.0.1:5000/hello-world` - Push to the local registry
+* `docker image pull 127.0.0.1:5000/hello-world` - Pull from the local registry
+
+Above examples do *NOT* retian images when they stop! For that we need a volume:
+
+* `docker container run -d -p5000:5000 --name registry -v $(pwd)/registry-data:/var/lib/registry registry`
+
+### Registry on a Swarm
+
+In a Swarm, you cannot use an image that is only in one node! It must be able to pull from a repository availabe for all nodes.
+
+Becasue of the `Routing Mesh` 127.0.0.1:5000 is accessible by all nodes.
+
+Registry can run the same way in a Swarm pretty much the same way, running as a `service`.
+
+* `docker service create --name registry --publish 5000:5000 ... registry`
+* `docker pull nginx`
+* `docker tag nginx 127.0.0.1:5000/nginx`
+* `docker push 127.0.0.1:5000/nginx`
+* `docker service create --name nginx -p 80:80 --replicas 5 --detach=false 127.0.0.1:5000/nginx` - Creates a service from the image in the local registry!
 
 
 ## Extra random goodies
