@@ -1,6 +1,6 @@
 # Docker Notes
 
-> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://gemalto.udemy.com/user/bretfisher/), Course resources at: https://github.com/tkarakai-gto/udemy-docker-mastery
+> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at: https://github.com/tkarakai-gto/udemy-docker-mastery
 
 ## Table of Contents
 
