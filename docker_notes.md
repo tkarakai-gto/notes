@@ -32,6 +32,7 @@
     - [docker-compose.yml](#docker-composeyml)
     - [docker-compose CLI](#docker-compose-cli)
     - [Building images within compose files](#building-images-within-compose-files)
+    - [Scaling containers with `docker-compose`](#scaling-containers-with-docker-compose)
   - [Swarm Mode](#swarm-mode)
     - [docker swarm init](#docker-swarm-init)
     - [Swarm Roles and Definitions](#swarm-roles-and-definitions)
@@ -786,6 +787,14 @@ web:
 ```
 
 > *WARNING* `extends` currently only works up to v2.1, NOT YET in v3.x (as of June 2017)
+
+### Scaling containers with `docker-compose`
+
+You can start `docker-compose` with multiple instances of the services defined in the `docker-compose.yml` file.
+
+* `docker-compose up -d --scale redis-sentinel=3` - Starts the services with 3 instances of the `sentinel` service.
+* `docker-compose scale sentinel=3` - scales one of the services on an already running setup.
+
 
 ## Swarm Mode
 

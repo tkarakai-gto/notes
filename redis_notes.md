@@ -22,9 +22,11 @@
       - [Redis Cluster](#redis-cluster)
       - [Redis Sentinel](#redis-sentinel)
       - [RLEP (Redi Labs Enterprise Pack)](#rlep-redi-labs-enterprise-pack)
+  - [Tips for operations](#tips-for-operations)
+    - [What happens during failover](#what-happens-during-failover)
   - [Further Reading](#further-reading)
     - [Self learning](#self-learning)
-      - [Links on Clustering/Sentinel](#links-on-clusteringsentinel)
+      - [Links on Clustering/Sentinel (Redis in Production)](#links-on-clusteringsentinel-redis-in-production)
 
 <!-- TOC END -->
 
@@ -136,6 +138,38 @@
  - Offers a proxy based independent clustering solution for $$
 
 
+## Tips for operations
+* `redis-cli monitor` - this command, instead of going into the interactive mode, it will output commands received by that redis server, live, kinda like tail. Good for basic (low traffic) monitoring.
+* `INFO replication` - This Redis command tells you if the server you are connected to is a Master or slave and other replication details.
+* `SAVE` and `BGSAVE` - save the `dump.rdb` (or whatever file name is configured in redis.conf) to disk.
+* Simple data recovery: `dump.rdb` can be copied into the filesystem of a stopped Redis instance, and when Redis starts, it will restore its state from it.
+* **NEVER** use even number of sentines. They might not be able to pick a new master when half of the sentinels vote for one and the other half for another node. **ALWAYS** use odd number of sentines, at least 3.
+
+### What happens during failover
+
+Source: https://www.youtube.com/watch?v=wdPqFa3ru6U&list=PL83Wfqi-zYZF1MDKLr5djmLYUI0woy1wi&index=48 and in writing http://lolpack.me/rediswhitepaper.pdf
+
+Steps of failover -- 1GB in memory
+
+1. Master is unreachable
+1. Sentinels (as they discover that they haven't heard from Master for a while) will reach quorum and initiate failover -- 30 sec, configurable
+1. A Slave is elected as the new Master
+1. The new Master does a full `BGSAVE` (dumps last known state to disk) -- ~9 sec
+1. The new Master syncs data to discoverable Slaves. During this time the Slaves are **NOT** serving traffic -- ~40 sec, over very fast Internet connection
+1. Slaves load data from disk into memory -- ~8 sec
+1. Slaves start serving traffic
+
+For 1GB of data that's ~1.5 min of down time.
+
+For 5GB of data that's ~3 min of down time.
+
+For 20GB of data that's ~12.5 min of down time!
+
+For 40GB of data that's ~18 min of down time!!!
+
+That's when people start asking "Why can't you just restart it??"... Well, restarting would do nothing, the loading from disk would happen there too...
+
+
 ## Further Reading
 
 ### Self learning
@@ -149,9 +183,12 @@
  - https://try.redis.io/
  - https://www.youtube.com/watch?v=qHkXVY2LpwU - Redis complementing MongoDb
 
-#### Links on Clustering/Sentinel
+#### Links on Clustering/Sentinel (Redis in Production)
  - https://redis.io/topics/sentinel
  - https://redis.io/topics/cluster-tutorial
  - https://scalegrid.io/blog/high-availability-with-redis-sentinels-connecting-to-redis-masterslave-sets/
  - http://code.flickr.net/2014/07/31/redis-sentinel-at-flickr/
  - http://www.programcreek.com/java-api-examples/index.php?source_dir=wint-master/wint-framework/src/main/java/wint/help/redis/SentinelRedisClient.java
+ - Upgrading or restaring Redis without downtime: https://redis.io/topics/admin
+ - Clustering alternative: https://github.com/twitter/twemproxy - Proxy in front of Redis nodes, client sees a single Redis instance. Supports fail-over and limited sharding. See https://www.youtube.com/watch?v=3zxYaI3RQyM
+ - Redis Sentinel failover case study: https://www.youtube.com/watch?v=wdPqFa3ru6U&list=PL83Wfqi-zYZF1MDKLr5djmLYUI0woy1wi&index=48 . Very useful!
