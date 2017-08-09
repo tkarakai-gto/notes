@@ -178,6 +178,7 @@ That's when people start asking "Why can't you just restart it??"... Well, resta
 
 Do NOT interact with Slaves if you care about failover related down times. Interact with Masters exclusively, for both READs and WRITEs. The Slaves will sync up in the background during failover.
 
+**Conclusion:** Do NOT interact with Slaves if you care about failover related down times. Interact with Masters exclusively, for both READs and WRITEs. The Slaves will sync up in the background during failover.
 
 ## Further Reading
 
