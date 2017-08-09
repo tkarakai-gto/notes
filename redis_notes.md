@@ -23,7 +23,9 @@
       - [Redis Sentinel](#redis-sentinel)
       - [RLEP (Redi Labs Enterprise Pack)](#rlep-redi-labs-enterprise-pack)
   - [Tips for operations](#tips-for-operations)
-    - [What happens during failover](#what-happens-during-failover)
+    - [Why you shouln't READ from Slaves](#why-you-shoulnt-read-from-slaves)
+      - [What happens during failover?](#what-happens-during-failover)
+      - [Conclusion](#conclusion)
   - [Further Reading](#further-reading)
     - [Self learning](#self-learning)
       - [Links on Clustering/Sentinel (Redis in Production)](#links-on-clusteringsentinel-redis-in-production)
@@ -145,29 +147,36 @@
 * Simple data recovery: `dump.rdb` can be copied into the filesystem of a stopped Redis instance, and when Redis starts, it will restore its state from it.
 * **NEVER** use even number of sentines. They might not be able to pick a new master when half of the sentinels vote for one and the other half for another node. **ALWAYS** use odd number of sentines, at least 3.
 
-### What happens during failover
+### Why you shouln't READ from Slaves
+
+...if you care about failover related downtimes.
 
 Source: https://www.youtube.com/watch?v=wdPqFa3ru6U&list=PL83Wfqi-zYZF1MDKLr5djmLYUI0woy1wi&index=48 and in writing http://lolpack.me/rediswhitepaper.pdf
+
+#### What happens during failover?
 
 Steps of failover -- 1GB in memory
 
 1. Master is unreachable
 1. Sentinels (as they discover that they haven't heard from Master for a while) will reach quorum and initiate failover -- 30 sec, configurable
 1. A Slave is elected as the new Master
+1. Master starts serving requests, but the Slave(s) not yet!
 1. The new Master does a full `BGSAVE` (dumps last known state to disk) -- ~9 sec
 1. The new Master syncs data to discoverable Slaves. During this time the Slaves are **NOT** serving traffic -- ~40 sec, over very fast Internet connection
 1. Slaves load data from disk into memory -- ~8 sec
 1. Slaves start serving traffic
 
-For 1GB of data that's ~1.5 min of down time.
-
-For 5GB of data that's ~3 min of down time.
-
-For 20GB of data that's ~12.5 min of down time!
-
-For 40GB of data that's ~18 min of down time!!!
+Downtime for Slaves:
+* For 1GB of data: ~1.5 min.
+* For 5GB of data: ~3 min.
+* For 20GB of data: ~12.5 min!
+* For 40GB of data: ~18 min!!!
 
 That's when people start asking "Why can't you just restart it??"... Well, restarting would do nothing, the loading from disk would happen there too...
+
+#### Conclusion
+
+Do NOT interact with Slaves if you care about failover related down times. Interact with Masters exclusively, for both READs and WRITEs. The Slaves will sync up in the background during failover.
 
 
 ## Further Reading
