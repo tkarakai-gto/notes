@@ -22,13 +22,13 @@
       - [Geospatial](#geospatial)
       - [PubSub](#pubsub)
   - [Scaling and HA](#scaling-and-ha)
-      - [[Replication]((https://redis.io/topics/replication)](#replicationhttpsredisiotopicsreplication)
+      - [Replication](#replication)
       - [Redis Sentinel](#redis-sentinel)
       - [Partitioning](#partitioning)
       - [twemproxy (nutcracker)](#twemproxy-nutcracker)
       - [Redis Cluster](#redis-cluster)
       - [Redis(e) Pack from RedisLabs](#redise-pack-from-redislabs)
-    - [Why you shouln't READ from Slaves](#why-you-shoulnt-read-from-slaves)
+    - [Why you shouldn't READ from Slaves](#why-you-shouldnt-read-from-slaves)
       - [Case Study - What happens during failover (using Sentinel)?](#case-study---what-happens-during-failover-using-sentinel)
       - [Conclusion](#conclusion)
   - [Tips for operations](#tips-for-operations)
@@ -150,7 +150,7 @@
 
 There are multiple overlapping solution to scaling and high availibility, some developed by the opensource Redis project (Sentinel and Redis Cluster), some by RedisLabs (RLEP) and some by independent projects (twemproxy) with different goals and features.
 
-#### [Replication]((https://redis.io/topics/replication)
+#### [Replication](https://redis.io/topics/replication)
  - Master to Slave replication and failover allows virtually no down time when Master goes down.
  - In a common scenario Master can interact with clents, while slave stores replicated data to disk
 
@@ -191,7 +191,7 @@ are set in a configuration YAML file.
  - Offers a proxy based independent clustering (sharding) solution for $$.
 
 
-### Why you shouln't READ from Slaves
+### Why you shouldn't READ from Slaves
 
 ...if you care about failover related downtimes.
 
