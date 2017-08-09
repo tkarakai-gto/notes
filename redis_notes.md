@@ -154,21 +154,21 @@ Steps of failover -- 1GB in memory
 1. Master is unreachable
 1. Sentinels (as they discover that they haven't heard from Master for a while) will reach quorum and initiate failover -- 30 sec, configurable
 1. A Slave is elected as the new Master
+1. Master starts serving requests, but the Slave(s) not yet!
 1. The new Master does a full `BGSAVE` (dumps last known state to disk) -- ~9 sec
 1. The new Master syncs data to discoverable Slaves. During this time the Slaves are **NOT** serving traffic -- ~40 sec, over very fast Internet connection
 1. Slaves load data from disk into memory -- ~8 sec
 1. Slaves start serving traffic
 
-For 1GB of data that's ~1.5 min of down time.
-
-For 5GB of data that's ~3 min of down time.
-
-For 20GB of data that's ~12.5 min of down time!
-
-For 40GB of data that's ~18 min of down time!!!
+Downtime for Slaves:
+* For 1GB of data: ~1.5 min.
+* For 5GB of data: ~3 min.
+* For 20GB of data: ~12.5 min!
+* For 40GB of data: ~18 min!!!
 
 That's when people start asking "Why can't you just restart it??"... Well, restarting would do nothing, the loading from disk would happen there too...
 
+**Conclusion:** Do NOT interact with Slaves if you care about failover related down times. Interact with Masters exclusively, for both READs and WRITEs. The Slaves will sync up in the background during failover.
 
 ## Further Reading
 
