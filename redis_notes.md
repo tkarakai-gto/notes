@@ -56,6 +56,7 @@ The name stands for: *REmote DIctionary Server*.
  * Redis Cluster support for NAT / Docker in v4.0
 
  * Very efficient but *very simple*, low level tool (compared to SQL db indexes, query language, high level clustering, etc.)
+ * Experiment with [Redis in docker-compose](https://github.com/tkarakai-gto/notes/blob/master/docker/redis/docker-compose.yml)!
 
 
 ### As a cache
@@ -183,6 +184,7 @@ There are multiple overlapping solution to scaling and high availibility, some d
 
  * Node monitoring, notification and failover management process, independent from Redis Cluster
  * Sentinel need "smart" (sentinel aware) Redis clients, OR having HAProxy in front of Redis to redirect to slave in case of master failure, OR use virtual IPs
+ * Experiment with [Redis Sentinel in docker-compose](https://github.com/tkarakai-gto/notes/tree/master/docker/redis-sentinel)!
 
 
 #### Partitioning
@@ -221,6 +223,7 @@ are set in a configuration YAML file.
 #### [Redis(e) Pack](https://redislabs.com/products/redis-pack/) from RedisLabs
 
  * Offers a proxy based independent clustering (sharding) solution for $$.
+ * Experiment with [Redis(e) Pack in docker-compose](https://github.com/tkarakai-gto/notes/tree/master/docker/redislabs)!
 
 
 ### Why you shouldn't READ from Slaves
@@ -243,10 +246,10 @@ Steps of failover -- 1GB in memory
 1. Slaves start serving traffic
 
 Downtime for Slaves:
-* For 1GB of data: ~1.5 min.
-* For 5GB of data: ~3 min.
-* For 20GB of data: ~12.5 min!
-* For 40GB of data: ~18 min!!!
+* 1GB of data: ~1.5 min.
+* 5GB of data: ~3 min.
+* 20GB of data: ~12.5 min!
+* 40GB of data: ~18 min!!!
 
 That's when people start asking "Why can't you just restart it??"... Well, restarting would do nothing, the loading from disk would happen there too...
 
