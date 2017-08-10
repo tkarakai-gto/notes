@@ -43,9 +43,9 @@ These are some notes about Redis that I thought were worth writing down. Far fro
 
 ## What is Redis?
 
-The name stands for: *REmote Dictionary Server*.
+The name stands for: *REmote DIctionary Server*.
 
- * Open source (BSD licensed), super fast, noSQL *in-memory cache/database/message broker*
+ * It is an open source (BSD licensed), super fast, noSQL *in-memory cache/database/message broker*
  * Also said to be a *Key -> Data Structure store* (vs. key-value store, more than String)
  * In-memory, yes, but has [*disk persistence*](https://redis.io/topics/persistence), so you survive a crash
  * Clustering, HA supported
