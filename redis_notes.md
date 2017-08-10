@@ -1,6 +1,6 @@
 # Redis Notes
 
-These are some notes about Redis that I thought were worth writing down. Far from being complete, far from being right. Just notes.
+These are some notes about Redis that I thought were worth writing down. Far from being complete, far from being right. Just notes...
 
 ## Table of Contents
 
