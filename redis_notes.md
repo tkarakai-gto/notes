@@ -1,16 +1,18 @@
 # Redis Notes
 
+These are some notes about Redis that I thought were worth writing down. Far from being complete, far from being right. Just notes.
+
 ## Table of Contents
 
 <!-- TOC START min:2 max:4 link:true update:true -->
   - [Table of Contents](#table-of-contents)
   - [What is Redis?](#what-is-redis)
-  - [Very fast (that's the reputation)](#very-fast-thats-the-reputation)
-  - [As a cache](#as-a-cache)
-  - [As a Database](#as-a-database)
-  - [As a Pub/Sub messaging system](#as-a-pubsub-messaging-system)
-  - ["Traditional" Use Cases](#traditional-use-cases)
-  - [More "Interesting" Use Cases](#more-interesting-use-cases)
+    - [As a cache](#as-a-cache)
+    - [As a Database](#as-a-database)
+    - [As a Pub/Sub messaging system](#as-a-pubsub-messaging-system)
+    - [Very fast (that's the reputation)](#very-fast-thats-the-reputation)
+    - ["Traditional" Use Cases](#traditional-use-cases)
+    - [More "Interesting" Use Cases](#more-interesting-use-cases)
   - [Data types and abstractions](#data-types-and-abstractions)
       - [Strings](#strings)
       - [Lists](#lists)
@@ -51,23 +53,15 @@
  - Supports [LUA scripting](https://redis.io/commands#scripting) (LUA compiles into memory) and [modules](https://redis.io/modules) to add flexibility
  - Redis Cluster support for NAT / Docker in v4.0
 
- - Very efficient but *very simple*, low level tool (vs. SQL db indexes, query language, high level clustering, etc.)
+ - Very efficient but *very simple*, low level tool (compared to SQL db indexes, query language, high level clustering, etc.)
 
 
-## Very fast (that's the reputation)
- - Written in *C*
- - *Single-threaded server* (actually modern versions of Redis use threads for different things). It is not designed to benefit from multiple CPU cores, but [most of the time CPU is not the bottleneck](https://redis.io/topics/faq#redis-is-single-threaded-how-can-i-exploit-multiple-cpu--cores), memory and network are!.
- - You can [benchmark it yourself](https://redis.io/topics/benchmarks)
- - [Runs on *ARM processors*](https://redis.io/topics/ARM)
- - Base binary is <4MB, very small memory/CPU foorptint, can be *embedded in IoT* devices (think Raspberry Pi)
-
-
-## As a cache
+### As a cache
  - Configurable eviction, [key expiration](https://redis.io/commands/expire)
  - Optional data persistance (unusual for a cache system) so this cache can recover from a melt-down (does not need to start "cold")
  - "Intelligent" cache, becasue the data can be analysed/quaried with a lots of commands
  - Binary safe (no encoding)
- - String alue is 512MB!
+ - String value is 512MB!
  - Ideal for:
    - Plain strings
    - Full JSON objects
@@ -75,13 +69,13 @@
    - Raw bits/flags/counters (e.g. realtime metrics), see SETBIT, INCR, INCRBY
 
 
-## As a Database
+### As a Database
  - In addition to String it also has: list, set, sorted set, hash (+bitmap +hyperloglog)
  - [180 high performant commands](https://redis.io/commands) (server side execution), see [cheat-sheet](https://www.cheatography.com/tasjaevan/cheat-sheets/redis/)
- - Can be used as *1st class database*
+ - Can be used as *1st class database* in some cases
 
 
-## As a [Pub/Sub messaging system](https://redis.io/topics/pubsub)
+### As a [Pub/Sub messaging system](https://redis.io/topics/pubsub)
  - Very simple, fast and scalable async messaging
  - With some serious Limitations:
    - No persistence or value caching
@@ -91,7 +85,15 @@
  - This [article](https://making.pusher.com/redis-pubsub-under-the-hood/) shows the internals of how Redis pubsub is implemented.
 
 
-## "Traditional" Use Cases
+### Very fast (that's the reputation)
+ - Written in *C*
+ - *Single-threaded server* (actually modern versions of Redis use threads for different things). It is not designed to benefit from multiple CPU cores, but [most of the time CPU is not the bottleneck](https://redis.io/topics/faq#redis-is-single-threaded-how-can-i-exploit-multiple-cpu--cores), memory and network are!.
+ - You can [benchmark it yourself](https://redis.io/topics/benchmarks)
+ - [Runs on *ARM processors*](https://redis.io/topics/ARM)
+ - Base binary is <4MB, very small memory/CPU foorptint, can be *embedded in IoT* devices (think Raspberry Pi)
+
+
+### "Traditional" Use Cases
  - Counting stuff
  - User session store
  - Recent visitor list
@@ -106,7 +108,7 @@
  - [Autocomplete](http://autocomplete.redis.io/) word database
 
 
-## More "Interesting" Use Cases
+### More "Interesting" Use Cases
   - A buffer or pre-processor *in front of Mongo, MySQL* for write-intensive operations (like incoming Big Data)
   - A real-time data update digesting and reporting for short lived live updates
   - A IoT sensor data fed into Redis for live reports, archived later
