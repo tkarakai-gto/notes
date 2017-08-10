@@ -21,6 +21,7 @@
       - [Hyperloglog](#hyperloglog)
       - [Geospatial](#geospatial)
       - [PubSub](#pubsub)
+  - [Clients](#clients)
   - [Scaling and HA](#scaling-and-ha)
       - [Replication](#replication)
       - [Redis Sentinel](#redis-sentinel)
@@ -34,26 +35,29 @@
   - [Tips for operations](#tips-for-operations)
   - [Further Reading](#further-reading)
     - [Self learning](#self-learning)
-      - [Links on Clustering/Sentinel (Redis in Production)](#links-on-clusteringsentinel-redis-in-production)
+    - [Clustering/Sentinel (Redis in Production)](#clusteringsentinel-redis-in-production)
 
 <!-- TOC END -->
 
 ## What is Redis?
  - Stands for: *REmote Dictionary Server*
  - Open source (BSD licensed), super fast, noSQL *in-memory cache/database/message broker*
- - *Key -> data structure store* (vs. key-value store, more than String)
+ - Also said to be a *Key -> Data Structure store* (vs. key-value store, more than String)
  - In-memory, yes, but has [*disk persistence*](https://redis.io/topics/persistence), so you survive a crash
  - Clustering, HA supported
  - Very fast paced open source development since 2009, huge active community
  - Backed by commercial company *Redis Labs*
- - Very efficient but *very simple*, low level tool (vs. SQL db indexes, query language, high level clustering, etc.)
  - Supports [*pipelines*](https://redis.io/topics/pipelining) and [*basic transactions*](https://redis.io/topics/transactions)
  - Supports [LUA scripting](https://redis.io/commands#scripting) (LUA compiles into memory) and [modules](https://redis.io/modules) to add flexibility
- - Docker support in v4.0
+ - Redis Cluster support for NAT / Docker in v4.0
+
+ - Very efficient but *very simple*, low level tool (vs. SQL db indexes, query language, high level clustering, etc.)
+
 
 ## Very fast (that's the reputation)
  - Written in *C*
- - *Singe threaded*, so no locking needed
+ - *Single-threaded server* (actually modern versions of Redis use threads for different things). It is not designed to benefit from multiple CPU cores, but [most of the time CPU is not the bottleneck](https://redis.io/topics/faq#redis-is-single-threaded-how-can-i-exploit-multiple-cpu--cores), memory and network are!.
+ - You can [benchmark it yourself](https://redis.io/topics/benchmarks)
  - [Runs on *ARM processors*](https://redis.io/topics/ARM)
  - Base binary is <4MB, very small memory/CPU foorptint, can be *embedded in IoT* devices (think Raspberry Pi)
 
@@ -144,6 +148,15 @@
 
 #### [PubSub](https://redis.io/topics/pubsub)
  - Simple pubsub messaging
+
+
+## Clients
+
+There is a [dedicated page](https://redis.io/clients) on Redis Clients. Some examples:
+
+ - Java: [jedis](https://github.com/xetorthio/jedis) - Supports connecction pooling, pubsub, pipelines, transactions, LUA scripting, Sentinel, Cluster
+ - NodeJS: [ioredis](https://github.com/luin/ioredis) - Supports pipelines, pubsub, LUA scripting, Sentinel, Cluster
+ - C: [hiredis](https://github.com/redis/hiredis) - Super fast, minimalistic client
 
 
 ## Scaling and HA
@@ -250,7 +263,7 @@ Do NOT interact with Slaves if you care about failover related down times. Inter
  - https://try.redis.io/
  - https://www.youtube.com/watch?v=qHkXVY2LpwU - Redis complementing MongoDb
 
-#### Links on Clustering/Sentinel (Redis in Production)
+### Clustering/Sentinel (Redis in Production)
  - https://redis.io/topics/sentinel
  - https://redis.io/topics/cluster-tutorial
  - https://scalegrid.io/blog/high-availability-with-redis-sentinels-connecting-to-redis-masterslave-sets/
