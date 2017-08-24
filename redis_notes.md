@@ -102,6 +102,8 @@ The name stands for: *REmote DIctionary Server*.
 
 ### "Traditional" Use Cases
 
+ Here is an early post by antirez, Redis' lead developer (from 2011!) which explains that [Redis doesn't necesessarily has to replace other databases, it can solve "old" problems](http://oldblog.antirez.com/post/take-advantage-of-redis-adding-it-to-your-stack.html), like these:
+
  * Counting stuff
  * User session store
  * Recent visitor list
@@ -116,9 +118,12 @@ The name stands for: *REmote DIctionary Server*.
  * [Autocomplete](http://autocomplete.redis.io/) word database
 
 
+
 ### More "Interesting" Use Cases
 
  * A buffer or pre-processor *in front of Mongo, MySQL* for write-intensive operations (like incoming Big Data)
+ * [Database Caching Strategies
+Using Redis](https://d0.awsstatic.com/whitepapers/Database/database-caching-strategies-using-redis.pdf) (Amazon)
  * A real-time data update digesting and reporting for short lived live updates
  * A IoT sensor data fed into Redis for live reports, archived later
 
