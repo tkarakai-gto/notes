@@ -121,7 +121,7 @@ The name stands for: *REmote DIctionary Server*.
 
 ### More "Interesting" Use Cases
 
- * A buffer or pre-processor *in front of Mongo, MySQL* for write-intensive operations (like incoming Big Data)
+ * A buffer or pre-processor *in front of Mongo, MySQL* for write-intensive operations (like incoming Big Data), see [RedisLabs White Paper on the topic](http://lp.redislabs.com/rs/915-NFD-128/images/Redis-Labs-Why-MongoDB-Needs-Redis.pdf)
  * [Database Caching Strategies
 Using Redis](https://d0.awsstatic.com/whitepapers/Database/database-caching-strategies-using-redis.pdf) (Amazon)
  * A real-time data update digesting and reporting for short lived live updates

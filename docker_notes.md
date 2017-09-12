@@ -420,9 +420,9 @@ CMD ["tini", "--", "node", "./bin/www"]
 
 ## Container Lifetime & Persistent Data
 
- > * [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)  
- > * [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)  
-> * [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)  
+ > * [The 12-Factor App (Everyone Should Read: Key to Cloud Native App Design, Deployment, and Operation](https://12factor.net/)
+ > * [12 Fractured Apps (A follow-up to 12-Factor, a great article on how to do 12F correctly in containers)](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)
+> * [Intro to Immutable Infrastructure Concepts](https://www.oreilly.com/ideas/an-introduction-to-immutable-infrastructure)
 
 *Containers are meant to be immutable and ephemeral (disposable) as a design goal. We do not change things once they are running, instead we re-deploy a whole new container.*
 
@@ -510,9 +510,9 @@ It has two parts:
 2. `docker-compose`:
     * CLI tool for dev/test automation (uses the YAML file)
 
-> * [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)  
-> * [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)  
-> * [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)  
+> * [The YAML Format: Sample Generic YAML File](http://www.yaml.org/start.html)
+> * [The YAML Format: Quick Reference](http://www.yaml.org/refcard.html)
+> * [Compose File Version Differences (Docker Docs)](https://docs.docker.com/compose/compose-file/compose-versioning/)
 > * [Docker Compose Release Downloads (good for Linux users that need to download   manually)](https://github.com/docker/compose/releases)
 
 ### docker-compose.yml
@@ -1462,3 +1462,7 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 *How to upgrade Docker Engine in Docker Toolbox*
 
 * When you upgrade Docker Toolbox (on an old Windows 7 laptop), it only upgrades the Docker Client. Do `docker version` to verify. In order to upgrade the Docker server (Engine) you need to issue `docker-machine upgrade default` (if yours is called "default")
+
+*Some free, self-paced training*
+ * http://training.play-with-docker.com/
+ * http://container.training
