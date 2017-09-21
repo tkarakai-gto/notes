@@ -1,7 +1,7 @@
 # Docker Notes
 
 <!-- TOC START min:2 max:4 link:true update:true -->
-> Originally, these notes are based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at:  https://github.com/BretFisher/udemy-docker-mastery.
+Originally, these notes were based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at:  https://github.com/BretFisher/udemy-docker-mastery.
 
 ## Table of Contents
 <!-- MDTOC maxdepth:2 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
