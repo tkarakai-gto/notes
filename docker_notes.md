@@ -1436,11 +1436,11 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 
 * When you upgrade Docker Toolbox (on an old Windows 7 laptop), it only upgrades the Docker Client. Do `docker version` to verify. In order to upgrade the Docker server (Engine) you need to issue `docker-machine upgrade default` (if yours is called "default")
 
-#### How to make the `docker` command work in different colnsoles
+#### How to make the `docker` command work in different consoles
 
-If the `docker` command doesn't work in your Windows console (like [cmder](http://cmder.net/) or the default Windows Command Prompt) use this to set the appropriate environment. Execute the suggested command.
+If the `docker` command (like `docker ps`) doesn't work in your Windows console (like [cmder](http://cmder.net/) or the default Windows Command Prompt) use this to set the appropriate environment. Just execute the suggested command displayed at the end of the output.
  * `docker-machine env --help`
- * `docker-machine env --shell cmd default` -- displays the commands to execute for the `cmd` (Windows) console. There are variations for fish, cmd, powershell and tcsh. `default` is  the name of the Docker Machine.
+ * `docker-machine env --shell cmd default` -- displays the environment variables needed and the command to execute applicable for the `cmd` (Windows) console (if you are running that). There are variations for fish, cmd, powershell and tcsh. `default` is  the name of the Docker Machine.
 
 ### Related services, alternatives
 
