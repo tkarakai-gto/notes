@@ -1,60 +1,67 @@
 # Docker Notes
 
-> Mostly based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at: https://github.com/tkarakai-gto/udemy-docker-mastery
+<!-- TOC START min:2 max:4 link:true update:true -->
+> Originally, these notes are based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at:  https://github.com/BretFisher/udemy-docker-mastery.
 
 ## Table of Contents
+<!-- MDTOC maxdepth:2 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-<!-- TOC START min:2 max:4 link:true update:true -->
-  - [Table of Contents](#table-of-contents)
-  - [Basics](#basics)
-    - [Docker Containers are *NOT* lightweight VMs](#docker-containers-are-not-lightweight-vms)
-    - [Getting inside of an existing/running container](#getting-inside-of-an-existingrunning-container)
-    - [Basic Monitoring](#basic-monitoring)
-    - [Quick temporary containers](#quick-temporary-containers)
-  - [Networking Basics](#networking-basics)
-  - [Name Resolution](#name-resolution)
-  - [Images defined](#images-defined)
-    - [Tags](#tags)
-    - [Docker Hub](#docker-hub)
-  - [Building Images](#building-images)
-    - [Building with `docker commit`](#building-with-docker-commit)
-    - [Building with Dockerfile, Example 1](#building-with-dockerfile-example-1)
-    - [`docker image build`](#docker-image-build)
-    - [Dockerfile Example 2](#dockerfile-example-2)
-    - [Dockerfile Example 3](#dockerfile-example-3)
-  - [Container Lifetime & Persistent Data](#container-lifetime--persistent-data)
-    - [Persistent Data Volumes](#persistent-data-volumes)
-    - [Bind Mounts](#bind-mounts)
-    - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
-    - [Jekyll exercise](#jekyll-exercise)
-    - [Changing running container resources](#changing-running-container-resources)
-  - [Docker Compose](#docker-compose)
-    - [docker-compose.yml](#docker-composeyml)
-    - [docker-compose CLI](#docker-compose-cli)
-    - [Building images within compose files](#building-images-within-compose-files)
-    - [Scaling containers with `docker-compose`](#scaling-containers-with-docker-compose)
-  - [Swarm Mode](#swarm-mode)
-    - [docker swarm init](#docker-swarm-init)
-    - [Swarm Roles and Definitions](#swarm-roles-and-definitions)
-    - [Create your first service and scale it out](#create-your-first-service-and-scale-it-out)
-    - [What happens when a container crashes?](#what-happens-when-a-container-crashes)
-    - [Building a multi-node swarm](#building-a-multi-node-swarm)
-    - [Scaling out with overlay networking](#scaling-out-with-overlay-networking)
-    - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
-    - [Stacks](#stacks)
-    - [Secrets](#secrets)
-    - [Secrets with Swarm Stacks](#secrets-with-swarm-stacks)
-    - [Secrets for local development](#secrets-for-local-development)
-    - [Full App lifecycle with Compose](#full-app-lifecycle-with-compose)
-  - [Image Storage and Distribution](#image-storage-and-distribution)
-    - [Docker Hub](#docker-hub-1)
-    - [Docker Store](#docker-store)
-    - [Docker Cloud](#docker-cloud)
-    - [Docker Registry (open source)](#docker-registry-open-source)
-    - [Registry on a Swarm](#registry-on-a-swarm)
-  - [Extra random goodies](#extra-random-goodies)
+- [Table of Contents](#Table-of-Contents)
+- [Basics](#Basics)
+   - [Docker Containers are *NOT* lightweight VMs](#Docker-Containers-are-NOT-lightweight-VMs)
+   - [Getting inside of an existing/running container](#Getting-inside-of-an-existingrunning-container)
+   - [Basic Monitoring](#Basic-Monitoring)
+   - [Quick temporary containers](#Quick-temporary-containers)
+- [Networking Basics](#Networking-Basics)
+- [Name Resolution](#Name-Resolution)
+- [Images defined](#Images-defined)
+   - [Tags](#Tags)
+   - [Docker Hub](#Docker-Hub)
+- [Building Images](#Building-Images)
+   - [Building with `docker commit`](#Building-with-docker-commit)
+   - [Building with Dockerfile, Example 1](#Building-with-Dockerfile-Example-1)
+   - [`docker image build`](#docker-image-build)
+   - [Dockerfile Example 2](#Dockerfile-Example-2)
+   - [Dockerfile Example 3](#Dockerfile-Example-3)
+- [Container Lifetime & Persistent Data](#Container-Lifetime-Persistent-Data)
+   - [Persistent Data Volumes](#Persistent-Data-Volumes)
+   - [Bind Mounts](#Bind-Mounts)
+   - [Database minor upgrade (exercise)](#Database-minor-upgrade-exercise)
+   - [Jekyll exercise](#Jekyll-exercise)
+   - [Changing running container resources](#Changing-running-container-resources)
+- [Docker Compose](#Docker-Compose)
+   - [docker-compose.yml](#docker-composeyml)
+   - [docker-compose CLI](#docker-compose-CLI)
+   - [Building images within compose files](#Building-images-within-compose-files)
+   - [Scaling containers with `docker-compose`](#Scaling-containers-with-docker-compose)
+- [Swarm Mode](#Swarm-Mode)
+   - [docker swarm init](#docker-swarm-init)
+   - [Swarm Roles and Definitions](#Swarm-Roles-and-Definitions)
+   - [Create your first service and scale it out](#Create-your-first-service-and-scale-it-out)
+   - [What happens when a container crashes?](#What-happens-when-a-container-crashes)
+   - [Building a multi-node swarm](#Building-a-multi-node-swarm)
+   - [Scaling out with overlay networking](#Scaling-out-with-overlay-networking)
+   - [Scaling Out with Routing Mesh](#Scaling-Out-with-Routing-Mesh)
+   - [Stacks](#Stacks)
+   - [Secrets](#Secrets)
+   - [Secrets with Swarm Stacks](#Secrets-with-Swarm-Stacks)
+   - [Secrets for local development](#Secrets-for-local-development)
+   - [Full App lifecycle with Compose](#Full-App-lifecycle-with-Compose)
+- [Image Storage and Distribution](#Image-Storage-and-Distribution)
+   - [Docker Hub](#Docker-Hub-1)
+   - [Docker Store](#Docker-Store)
+   - [Docker Cloud](#Docker-Cloud)
+   - [Docker Registry (open source)](#Docker-Registry-open-source)
+   - [Registry on a Swarm](#Registry-on-a-Swarm)
+- [Extra random goodies](#Extra-random-goodies)
+   - [Windows Tips](#Windows-Tips)
+   - [Related services, alternatives](#Related-services-alternatives)
+   - [Dev Tools to experiment with](#Dev-Tools-to-experiment-with)
+   - [Monitoring](#Monitoring)
+   - [Public domain related services](#Public-domain-related-services)
+   - [Some free, self-paced training](#Some-free-self-paced-training)
 
-<!-- TOC END -->
+<!-- /MDTOC -->
 
 ## Basics
 
@@ -1423,7 +1430,19 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 
 ## Extra random goodies
 
-*Related services, alternatives*
+### Windows Tips
+
+#### How to upgrade Docker Engine in Docker Toolbox
+
+* When you upgrade Docker Toolbox (on an old Windows 7 laptop), it only upgrades the Docker Client. Do `docker version` to verify. In order to upgrade the Docker server (Engine) you need to issue `docker-machine upgrade default` (if yours is called "default")
+
+#### How to make the `docker` command work in different colnsoles
+
+If the `docker` command doesn't work in your Windows console (like [cmder](http://cmder.net/) or the default Windows Command Prompt) use this to set the appropriate environment. Execute the suggested command.
+ * `docker-machine env --help`
+ * `docker-machine env --shell cmd default` -- displays the commands to execute for the `cmd` (Windows) console. There are variations for fish, cmd, powershell and tcsh. `default` is  the name of the Docker Machine.
+
+### Related services, alternatives
 
 > * https://cloud.docker.com/ - Continuous integration, delivery, registry management in the cloud. Includes one free private repository.
 
@@ -1434,7 +1453,7 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 
 > * https://deis.com/ - Kubernetes based tools
 
-*Dev Tools to experiment with*
+### Dev Tools to experiment with
 
 > * https://circleci.com/ can do continuous build/test/deploy of a Docker container, triggered by Github/Bitbucket changes, 1 container FREE.
 > * https://codeship.com can do pretty much the same
@@ -1442,7 +1461,7 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 > * [Digital Ocean Coupon for $10](https://m.do.co/c/b813dfcad8d4)
 > * [Another Digital Ocean Coupon for $10](https://www.digitalocean.com/?refcode=0a14c0d916b3)
 
-*Monitoring*
+### Monitoring
 
 ...other than `docker stats` and `docker service logs`
 
@@ -1453,16 +1472,13 @@ Registry can run the same way in a Swarm pretty much the same way, running as a 
 > * [papertrail](https://papertrailapp.com/) - Log management in the cloud. Free for 7 days retention (48 hours search) 100MB/**month** (!)
 > * [loggly](https://www.loggly.com/) - Log management in the cloud. Free for 7 days retention up to 200MB/**day** (!)
 
-*Public domain related services*
+### Public domain related services
 
 > * http://internetbs.net - Domain name regisrar charging $9/year for `.com`, *including* whois protection. Hosted outseide the U.S..
 > * https://letsencrypt.org/ - Free, real SSL/TLS Certificates (with 90 days validity)
 > * https://www.ssllabs.com/ssltest/ - SSL test for web sites. You should see A+ rating!
 
-*How to upgrade Docker Engine in Docker Toolbox*
+### Some free, self-paced training
 
-* When you upgrade Docker Toolbox (on an old Windows 7 laptop), it only upgrades the Docker Client. Do `docker version` to verify. In order to upgrade the Docker server (Engine) you need to issue `docker-machine upgrade default` (if yours is called "default")
-
-*Some free, self-paced training*
  * http://training.play-with-docker.com/
  * http://container.training
