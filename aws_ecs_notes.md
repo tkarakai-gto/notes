@@ -3,29 +3,29 @@
 ## Table of Contents
 <!-- MDTOC maxdepth:2 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [Table of Contents](#Table-of-Contents)   
-- [AWS -- Amazon Web Services](#AWS-Amazon-Web-Services)   
-- [AWS CLI](#AWS-CLI)   
-- [IAM -- Identity and Access Management](#IAM-Identity-and-Access-Management)   
-   - [Creating Users, Groups](#Creating-Users-Groups)   
-   - [Security Group](#Security-Group)   
-   - [Roles](#Roles)   
-- [EC2 -- Elastic Compute Cloud](#EC2-Elastic-Compute-Cloud)   
-- [ELB -- Elastic Load Balancing](#ELB-Elastic-Load-Balancing)   
-- [ECR -- EC2 Container Registry](#ECR-EC2-Container-Registry)   
-- [ECS -- EC2 Container Service](#ECS-EC2-Container-Service)   
-   - [ECS CLI](#ECS-CLI)   
-   - [Clusters](#Clusters)   
-   - [Prepare the S3 bucket for ECS Container Agent configuration](#Prepare-the-S3-bucket-for-ECS-Container-Agent-configuration)   
-   - [ECS Container Agent](#ECS-Container-Agent)   
-   - [Container Instances](#Container-Instances)   
-   - [Task Definitions](#Task-Definitions)   
-   - [Running Tasks](#Running-Tasks)   
-   - [Scheduling Services](#Scheduling-Services)   
-   - [Tearing Down a Cluster](#Tearing-Down-a-Cluster)   
-   - [Ruby on Rails App example](#Ruby-on-Rails-App-example)   
-- [Related AWS Terms](#Related-AWS-Terms)   
-- [F.A.Q., Troubleshooting](#FAQ-Troubleshooting)   
+- [Table of Contents](#Table-of-Contents)
+- [AWS -- Amazon Web Services](#AWS-Amazon-Web-Services)
+- [AWS CLI](#AWS-CLI)
+- [IAM -- Identity and Access Management](#IAM-Identity-and-Access-Management)
+   - [Creating Users, Groups](#Creating-Users-Groups)
+   - [Security Group](#Security-Group)
+   - [Roles](#Roles)
+- [EC2 -- Elastic Compute Cloud](#EC2-Elastic-Compute-Cloud)
+- [ELB -- Elastic Load Balancing](#ELB-Elastic-Load-Balancing)
+- [ECR -- EC2 Container Registry](#ECR-EC2-Container-Registry)
+- [ECS -- EC2 Container Service](#ECS-EC2-Container-Service)
+   - [ECS CLI](#ECS-CLI)
+   - [Clusters](#Clusters)
+   - [Prepare the S3 bucket for ECS Container Agent configuration](#Prepare-the-S3-bucket-for-ECS-Container-Agent-configuration)
+   - [ECS Container Agent](#ECS-Container-Agent)
+   - [Container Instances](#Container-Instances)
+   - [Task Definitions](#Task-Definitions)
+   - [Running Tasks](#Running-Tasks)
+   - [Scheduling Services](#Scheduling-Services)
+   - [Tearing Down a Cluster](#Tearing-Down-a-Cluster)
+   - [Ruby on Rails App example](#Ruby-on-Rails-App-example)
+- [Related AWS Terms](#Related-AWS-Terms)
+- [F.A.Q., Troubleshooting](#FAQ-Troubleshooting)
 
 <!-- /MDTOC -->
 
@@ -398,9 +398,9 @@ Example commands:
 }
 ```
 
-A service can be "hooked up" to an *ELB* (Elastic Load Balancer) where ELB handles adding and removing instances automatically when the service scales up/down or when an instance becomes unhealthy.
-
 The [Service Definition](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) defines which task definition to use with your service, how many instantiations of that task to run, and which load balancers (if any) to associate with your tasks.
+
+A service can be "hooked up" to an *ELB* (Elastic Load Balancer) where ELB handles adding and removing instances automatically when the service scales up/down or when an instance becomes unhealthy.
 
 Example:
 
@@ -437,7 +437,7 @@ File `web-service.json`:
  - `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/usr/src/app -w /usr/src/app rails:4 rails new --skip-bundle dockerzon`
 
 
-## Related AWS Terms
+## AWS Terms (Glossary)
 
  - S3 -- [Simple Storage Service](https://aws.amazon.com/documentation/s3/)
  - Route 53 -- [DNS Servicwe](https://aws.amazon.com/route53/)
@@ -466,17 +466,21 @@ File `web-service.json`:
 
 ---
 
-**PROBLEM** How do I add instances to a load balancer?
+**PROBLEM:** How do I add instances to a load balancer?
+
+**SOLUTION:**
 
 ---
 
-**PROBLEM** How do I start tasks on a cluster?
+**PROBLEM:** How do I start tasks on a cluster?
+
+**SOLUTION:**
 
 ---
 
-**PROBLEM** How does the `aws ec2 run-instances --image-id ami-...` command knows to join an ECS cluster?
+**PROBLEM:** How does the `aws ec2 run-instances --image-id ami-...` command knows to join an ECS cluster?
 
-**SOLUTION** Based on the `ecs.config` file, in  there the `ECS_CLUSTER=production` confiuration (in this case specifying the cluster called `production`). This file is made available by copying it in to the instance from an S3 bucket. The script that copies it in is specified in the `--user-data file://copy-ecs-config-to-s3` which gets executed on the instance at startup time.
+**SOLUTION:** Based on the `ecs.config` file, in  there the `ECS_CLUSTER=production` confiuration (in this case specifying the cluster called `production`). This file is made available by copying it in to the instance from an S3 bucket. The script that copies it in is specified in the `--user-data file://copy-ecs-config-to-s3` which gets executed on the instance at startup time.
 
 File: copy-ecs-config-to-s3
 ```
@@ -487,6 +491,6 @@ aws s3 cp s3://tkarakai-gto-dockerzon/ecs.config /etc/ecs/ecs.config
 ```
 File: ecs.config
 ```
-ECS_CLUSTER=deepdive
+ECS_CLUSTER=production
 ```
 ---
