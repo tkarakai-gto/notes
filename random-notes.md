@@ -1,6 +1,6 @@
 ---
 
-## How to use githib wth multiple accounts on Windows?
+## How to use github with multiple accounts on Windows?
 
 `git config --global credential.useHttpPath true`
 
