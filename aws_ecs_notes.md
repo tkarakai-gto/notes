@@ -33,7 +33,7 @@
 
 A large collection of cloud based services from Amazon.
 
-A single account enables access to all AWS servics, you pay for resources you use.
+A single account enables access to all AWS services, you pay for resources you use.
 
  - https://aws.amazon.com -- Sign up here.
  - https://console.aws.amazon.com/console/ -- The Web Console, for all AWS Services
@@ -47,7 +47,7 @@ The AWS Command Line Interface (CLI) is a unified tool to manage your AWS servic
  - Install and use [aws-shell](https://github.com/awslabs/aws-shell)! Super useful with the CLI.
  - The AWS CLI signs requests on your behalf, and includes a date in the signature. Ensure that your computer's date and time are set correctly;
 
-We will be using CLI comands for the rest of this document.
+We will be using CLI commands for the rest of this document.
 
 
 ## IAM -- Identity and Access Management
@@ -132,7 +132,7 @@ It is too difficult to create roles with the CLI, it would require passing in JS
    - Use case: `EC2 Container Service`,
    - Name: `ecsServiceRole`
 
-These roles will be used when creating EC2 instances for our ECS Servies.
+These roles will be used when creating EC2 instances for our ECS Services.
 
 
 ## EC2 -- Elastic Compute Cloud
@@ -318,9 +318,9 @@ Example commands:
 
 A *Task* the end result of running a task definition. Running a task is comparable to a *service*, but with the task, the containers do not need to be automatically restarted when stopped (a service will try to keep tasks running). It is useful to execute one-off task, like migrations or other batch jobs.
 
-The `run-task` command randomly distributes the tasks among the container instanes in the cluster, trying to minimize resource overload.
+The `run-task` command randomly distributes the tasks among the container instances in the cluster, trying to minimize resource overload.
 
-The [`aws start-task`](http://docs.aws.amazon.com/cli/latest/reference/ecs/start-task.html) command runs a task on a particular instance or instances (useful when certain instances are better suited for the task, e.g. have more mamory or CPUs).
+The [`aws start-task`](http://docs.aws.amazon.com/cli/latest/reference/ecs/start-task.html) command runs a task on a particular instance or instances (useful when certain instances are better suited for the task, e.g. have more memory or CPUs).
 
 Service and task life cycle (as tracked and reported by the *Container Agent*):
 
@@ -348,8 +348,8 @@ The *scheduler* determines where a service or a task will run on a cluster by fi
 
 Decisions the *scheduler* will make to place a task into a cluster:
 
- 1. Collect the service requirements (CPU, Memory, ports) and collect stats about currently running service tasks in all Container Instances in all availibility zones.
- 2. Selects the best Availibility Zone (with the most remaining resources)
+ 1. Collect the service requirements (CPU, Memory, ports) and collect stats about currently running service tasks in all Container Instances in all availability zones.
+ 2. Selects the best Availability Zone (with the most remaining resources)
  3. Selects the best Container Instance within the AZ (with the most remaining resources)
 
 Example commands:
