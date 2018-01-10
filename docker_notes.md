@@ -3,64 +3,64 @@
 Originally, these notes were based on the excellent Udemy course "Docker Mastery: The Complete Toolset From a Docker Captain" by [Bret Fisher](https://www.udemy.com/user/bretfisher/), Course resources at:  https://github.com/BretFisher/udemy-docker-mastery.
 
 ## Table of Contents
-<!-- MDTOC maxdepth:2 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [Table of Contents](#Table-of-Contents)
-- [Basics](#Basics)
-   - [Docker Containers are *NOT* lightweight VMs](#Docker-Containers-are-NOT-lightweight-VMs)
-   - [Getting inside of an existing/running container](#Getting-inside-of-an-existingrunning-container)
-   - [Basic Monitoring](#Basic-Monitoring)
-   - [Quick temporary containers](#Quick-temporary-containers)
-- [Networking Basics](#Networking-Basics)
-- [Name Resolution](#Name-Resolution)
-- [Images defined](#Images-defined)
-   - [Tags](#Tags)
-   - [Docker Hub](#Docker-Hub)
-- [Building Images](#Building-Images)
-   - [Building with `docker commit`](#Building-with-docker-commit)
-   - [Building with Dockerfile, Example 1](#Building-with-Dockerfile-Example-1)
-   - [`docker image build`](#docker-image-build)
-   - [Dockerfile Example 2](#Dockerfile-Example-2)
-   - [Dockerfile Example 3](#Dockerfile-Example-3)
-- [Container Lifetime & Persistent Data](#Container-Lifetime-Persistent-Data)
-   - [Persistent Data Volumes](#Persistent-Data-Volumes)
-   - [Bind Mounts](#Bind-Mounts)
-   - [Database minor upgrade (exercise)](#Database-minor-upgrade-exercise)
-   - [Jekyll exercise](#Jekyll-exercise)
-   - [Changing running container resources](#Changing-running-container-resources)
-- [Docker Compose](#Docker-Compose)
-   - [docker-compose.yml](#docker-composeyml)
-   - [docker-compose CLI](#docker-compose-CLI)
-   - [Building images within compose files](#Building-images-within-compose-files)
-   - [Scaling containers with `docker-compose`](#Scaling-containers-with-docker-compose)
-- [Swarm Mode](#Swarm-Mode)
-   - [docker swarm init](#docker-swarm-init)
-   - [Swarm Roles and Definitions](#Swarm-Roles-and-Definitions)
-   - [Create your first service and scale it out](#Create-your-first-service-and-scale-it-out)
-   - [What happens when a container crashes?](#What-happens-when-a-container-crashes)
-   - [Building a multi-node swarm](#Building-a-multi-node-swarm)
-   - [Scaling out with overlay networking](#Scaling-out-with-overlay-networking)
-   - [Scaling Out with Routing Mesh](#Scaling-Out-with-Routing-Mesh)
-   - [Stacks](#Stacks)
-   - [Secrets](#Secrets)
-   - [Secrets with Swarm Stacks](#Secrets-with-Swarm-Stacks)
-   - [Secrets for local development](#Secrets-for-local-development)
-   - [Full App lifecycle with Compose](#Full-App-lifecycle-with-Compose)
-- [Image Storage and Distribution](#Image-Storage-and-Distribution)
-   - [Docker Hub](#Docker-Hub-1)
-   - [Docker Store](#Docker-Store)
-   - [Docker Cloud](#Docker-Cloud)
-   - [Docker Registry (open source)](#Docker-Registry-open-source)
-   - [Registry on a Swarm](#Registry-on-a-Swarm)
-- [Extra random goodies](#Extra-random-goodies)
-   - [Windows Tips](#Windows-Tips)
-   - [Related services, alternatives](#Related-services-alternatives)
-   - [Dev Tools to experiment with](#Dev-Tools-to-experiment-with)
-   - [Monitoring](#Monitoring)
-   - [Public domain related services](#Public-domain-related-services)
-   - [Some free, self-paced training](#Some-free-self-paced-training)
+- [Table of Content](#table-of-content)
+- [Basics](#basics)
+    - [Docker Containers are *NOT* lightweight VMs](#docker-containers-are-not-lightweight-vms)
+    - [Getting inside of an existing/running container](#getting-inside-of-an-existingrunning-container)
+    - [Basic Monitoring](#basic-monitoring)
+    - [Quick temporary containers](#quick-temporary-containers)
+- [Networking Basics](#networking-basics)
+- [Name Resolution](#name-resolution)
+- [Images defined](#images-defined)
+    - [Tags](#tags)
+    - [Docker Hub](#docker-hub)
+- [Building Images](#building-images)
+    - [Building with `docker commit`](#building-with-docker-commit)
+    - [Building with Dockerfile, Example 1](#building-with-dockerfile-example-1)
+    - [`docker image build`](#docker-image-build)
+    - [Dockerfile Example 2](#dockerfile-example-2)
+    - [Dockerfile Example 3](#dockerfile-example-3)
+- [Container Lifetime & Persistent Data](#container-lifetime-persistent-data)
+    - [Persistent Data Volumes](#persistent-data-volumes)
+    - [Bind Mounts](#bind-mounts)
+    - [Database minor upgrade (exercise)](#database-minor-upgrade-exercise)
+    - [Jekyll exercise](#jekyll-exercise)
+    - [Changing running container resources](#changing-running-container-resources)
+- [Docker Compose](#docker-compose)
+    - [docker-compose.yml](#docker-composeyml)
+    - [docker-compose CLI](#docker-compose-cli)
+    - [Building images within compose files](#building-images-within-compose-files)
+    - [Scaling containers with `docker-compose`](#scaling-containers-with-docker-compose)
+- [Swarm Mode](#swarm-mode)
+    - [docker swarm init](#docker-swarm-init)
+    - [Swarm Roles and Definitions](#swarm-roles-and-definitions)
+    - [Create your first service and scale it out](#create-your-first-service-and-scale-it-out)
+    - [What happens when a container crashes?](#what-happens-when-a-container-crashes)
+    - [Building a multi-node swarm](#building-a-multi-node-swarm)
+    - [Scaling out with overlay networking](#scaling-out-with-overlay-networking)
+    - [Scaling Out with Routing Mesh](#scaling-out-with-routing-mesh)
+    - [Stacks](#stacks)
+    - [Secrets](#secrets)
+    - [Secrets with Swarm Stacks](#secrets-with-swarm-stacks)
+    - [Secrets for local development](#secrets-for-local-development)
+    - [Full App lifecycle with Compose](#full-app-lifecycle-with-compose)
+- [Image Storage and Distribution](#image-storage-and-distribution)
+    - [Docker Hub](#docker-hub)
+    - [Docker Store](#docker-store)
+    - [Docker Cloud](#docker-cloud)
+    - [Docker Registry (open source)](#docker-registry-open-source)
+    - [Registry on a Swarm](#registry-on-a-swarm)
+- [Extra random goodies](#extra-random-goodies)
+    - [Windows Tips](#windows-tips)
+        - [How to upgrade Docker Engine in Docker Toolbox](#how-to-upgrade-docker-engine-in-docker-toolbox)
+        - [How to make the `docker` command work in different consoles](#how-to-make-the-docker-command-work-in-different-consoles)
+    - [Related services, alternatives](#related-services-alternatives)
+    - [Dev Tools to experiment with](#dev-tools-to-experiment-with)
+    - [Monitoring](#monitoring)
+    - [Public domain related services](#public-domain-related-services)
+    - [Some free, self-paced training](#some-free-self-paced-training)
 
-<!-- /MDTOC -->
 
 ## Basics
 
@@ -108,7 +108,7 @@ If you use Docker Toolbox:
 
 * `docker-machine ssh` - Teleport into the console of the Docker Engine (vs. running commands on the Client)
 
-`docker-machine` is a Docker host mamagement CLI. By default it talks to the VM that is set up with Docker Toolbox (if on an older Windows or Mac), but it can create new Docker hosts, including on cloud platforms. It can also provision `Swarm` clusters.
+`docker-machine` is a Docker host management CLI. By default it talks to the VM that is set up with Docker Toolbox (if on an older Windows or Mac), but it can create new Docker hosts, including on cloud platforms. It can also provision `Swarm` clusters.
 
 > https://docs.docker.com/machine/overview/
 
@@ -180,7 +180,7 @@ Then there are "network drivers" too...
 * `docker network disconnect my_network redis` -Disconnects container from the network (remove virtual NIC plugged into the given network)
 * `docker network rm my_network` - Delete virtual network
 
-*Example `docker-compose.yml` demostrating network separation*
+*Example `docker-compose.yml` demonstrating network separation*
 ```yaml
 services:
     proxy:
@@ -293,12 +293,12 @@ Let's start with some basic `Dockerfile` instructions:
 * `RUN` - Execute command(s)
   * Use `&&` to concatenate commands to preserve FS layers.
   * Can run shell scripts, copy files, etc.
-  * Do *NOT* use commands that result in nondeterministic results, Docker will not know that it should build a new image layer. For example do not use `RUN apt-get update` by itself, append the specific apps to install/update to make it more specific, or use the `--no-cahce=true` flag in the `docker build ` command.
+  * Do *NOT* use commands that result in non-deterministic results, Docker will not know that it should build a new image layer. For example do not use `RUN apt-get update` by itself, append the specific apps to install/update to make it more specific, or use the `--no-cahce=true` flag in the `docker build ` command.
 
-The proper way to log is *NOT* to log to a log file, and there is no syslogd aor other syslog server either, Docker actually handles all the logging for us. All we have to do is all our logs are spit out into STDIN and STDERR. See second `RUN` command below.
+The proper way to log is *NOT* to log to a log file, and there is no syslogd or other syslog server either, Docker actually handles all the logging for us. All we have to do is all our logs are spit out into STDIN and STDERR. See second `RUN` command below.
 
 * `EXPOSE` - Expose ports within the virtual network (not yet to the outside!)
-* `CMD` - The default command to run every time the container is started or restarted (at runtime, not build time). Can be owerwritten with the command specified on the `docker container run` command.
+* `CMD` - The default command to run every time the container is started or restarted (at runtime, not build time). Can be overwritten with the command specified on the `docker container run` command.
 
 *Dockerfile*
 ```
@@ -375,7 +375,7 @@ The order of the instructions in `Dockerfile` is significant: `docker image buil
 * `ADD` - Similar to `COPY` but can add files from a URL, it can decompress source files. Generally less transparent than `COPY`, so it is less preferred.
 * Use the `.dockerignore` file to exclude files to be copied with `COPY` and `ADD`
 
-* `USER` - Sets the user name or UID to use when running the image and for any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile. *Highly recommended to set to a nonpriviledged user.* For example use something like `RUN useradd -ms /bin/bash mynewuser` before the `USER` instruction.
+* `USER` - Sets the user name or UID to use when running the image and for any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile. *Highly recommended to set to a non-privileged user.* For example use something like `RUN useradd -ms /bin/bash mynewuser` before the `USER` instruction.
 
 *Dockerfile*
 ```yaml
@@ -821,7 +821,7 @@ Swarm is *NOT* enabled by default, to make sure that existing orchestration solu
 Under the hood init does these:
 
 * PKI and security automation
-    * Root Signing Certificate  created for the Swarn (on the single node we are on) that will be used to establish trust between all Managers and Workers
+    * Root Signing Certificate  created for the Swarm (on the single node we are on) that will be used to establish trust between all Managers and Workers
     * Certificate is issued to first Manager node (on this node)
     * Join tokens are created (to be used on other nodes to join the swarm)
 * Enables the swarm API
@@ -875,7 +875,7 @@ When Swarm is enabled, it adds these commands:
 
 The container orchestration system will spawn a new one! Let's try it:
 * `docker container ls` - Find a container id to kill
-* `docker container rm -f my-container-id` - Forceibly kill a container in the swarm
+* `docker container rm -f my-container-id` - Forcibly kill a container in the swarm
 * `docker service ls` -- You should see "REPLICAS" of 2/3 for a while. Then in a matter of seconds a new container will be launched to replace the failed one.
 * `docker service ps my-service-name` - Should show the failed container as well as the new one.
 
@@ -897,7 +897,7 @@ Options to experiment:
 3. http://digitalocean.com + Docker install - Cloud, fast (SSD), $5-$10/node/month, but there is a coupon!
 4. Roll your own anywhere you can install Docker on, Amazon, Azure, DO, Google, etc.
 
-Let's do a 3 node swarm with digitalocean!
+Let's do a 3 node swarm with digitalocean.com!
 
 > [Digital Ocean Coupon for $10](https://m.do.co/c/b813dfcad8d4)
 
@@ -924,7 +924,7 @@ Install Docker with script at http://get.docker.com on each node.
 * node2: `docker node ls` - Should not work, only Managers can access the swarm
 * node1: `docker node update --role manager node1` - promote node2 to be a Manager. Do it for node3 too.
 * node1: `docker node ls` - Should list 2 nodes as Managers (node1 as "Leader", node2 as  "Reachable")
-* node1: `docker swarm join-token manager` - Displays the command to execut to join a node as a manager
+* node1: `docker swarm join-token manager` - Displays the command to execute to join a node as a manager
 * node3: Execute from the output of above: `docker swarm join --token ... node3` - Join directly as a Manager
 * node1: `docker node ls` - Should list all 3 as Managers.
 
@@ -944,7 +944,7 @@ Now we have a 3 node redundant swarm!
 
 * `--driver overlay` - Creates a swarm wide network where containers across multiple nodes can access each other on a VLAN
 * For container-to-container  traffic inside a single swarm
-* Optinal IPSec (AES) tunnel based encryption on network creation, off by default because of performance reasons
+* Optimal IPSec (AES) tunnel based encryption on network creation, off by default because of performance reasons
 * Each service can be added to multiple networks (e.g. front/back)
 
 *Exercise*
@@ -969,7 +969,7 @@ It does not matter which IP address you use for accessing Drupal, even though it
     * Container-to-container in an Overlay network, using VIP (private Virtual IP that is placed in front of each service) so services can talk to each other without an external load balancer (!)
     * External incoming traffic going to published ports (all nodes listen). The decision of which node will service the incoming request is handled by the Routing Mesh, it can choose any of the Workers. Note that containers can fail and recreated on different nodes, we want it to work without changing DNS and firewall settings.
 
-VIPs are not DMS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighting DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
+VIPs are not DNS round-robin, they are better. The problem is that sometimes DNS client caches inside the applications prevent us from using the correct (ever changing) IP, so rather than fighting DNS client configurations, we just rely on the VIP, which is kind of like having a load balancer *on each node* (on the external network) that knows which node to forward traffic to.
 
 > [Use swarm mode routing mesh (Docker Docs)](https://docs.docker.com/engine/swarm/ingress/)
 
@@ -1010,7 +1010,7 @@ These are the steps to make all these happen (after the swarm is up):
 
 ### Stacks
 
-* Represents stacks of servies, networks and volumes, kind of compose files for Swarms. In fact Stacks accepts compose files as its input.
+* Represents stacks of services, networks and volumes, kind of compose files for Swarms. In fact Stacks accepts compose files as its input.
 * Compose file has to be version 3 or higher
 * Added in v1.13
 * 1 Stack is for 1 Swarm
@@ -1115,25 +1115,25 @@ volumes:
   db-data:
 ```
 
-There is a new service in there caller `visualizer` on port 8080 that shows the nodes and the running cotainers within.
+There is a new service in there caller `visualizer` on port 8080 that shows the nodes and the running containers within.
 
 Execute with:
 * `docker stack deploy -c example-voting-app-stack.yml voteapp`
 * `docker stack ls` - Lists number of services
-* `docker stack ps voteapp` - Lists task runnig on all the nodes
+* `docker stack ps voteapp` - Lists task running on all the nodes
 * `docker stack services voteapp`- List per service
 
-* `docker stack deploy -c example-voting-app-stack.yml voteapp` Rerun the same command after changing the compose file will update the stack as needed (for example scale as per the change). This is not a good practice becasue the file retains the changes probably meant to be executed once.
+* `docker stack deploy -c example-voting-app-stack.yml voteapp` Rerun the same command after changing the compose file will update the stack as needed (for example scale as per the change). This is not a good practice because the file retains the changes probably meant to be executed once.
 
 ### Secrets
 
 Protects secrets within Docker like these:
 * Usernames, passwords
-* TLS certificaets and keys
+* TLS certificates and keys
 * SSH keys
 * Any data
 
-Up to 512kb in size.
+Up to 512 KB in size.
 
 The Swarm Raft database is encrypted on disk by default (as of Docker v1.13.0).
 
@@ -1155,12 +1155,12 @@ Local `docker-compose` based development can use real disk file-based secrets, t
 * `docker secret create psql_user psql_user.txt` - Adds the secret from a file
 * `echo "MyPassword" | docker secret create psql_user -` - Adds the secret from STDIN (that's what the `-` at the end is for)
 
-None of the above two methods are secure. The first one stores the secret in a file on the disk, the second one adds the secret to the basj history. Not good for production!
+None of the above two methods are secure. The first one stores the secret in a file on the disk, the second one adds the secret to the bash history. Not good for production!
 
 * `docker secret inspect psql_user` - JSON metadata (does not give away the secret :) )
 * `docker service create --name psql --secret psql_user --secret psql_pass -e POSTGRES_USER_FILE=/run/secrets/psql_user -e POSTGRES_PASSWORD_FILE=/run/secrets/psql_pass postgres` - By convention the `_FILE` postfix will replace the original env variable.
 * `docker exec -it psql.1.... bash`, then `ls /run/secrets` should show the two files.
-* `docker container logs psql.1.... ` - should show the db starting up ok
+* `docker container logs psql.1.... ` - should show the db starting up ok.
 
 * `docker service update --secret-rm ...` - remove. It will redeploy the container without the secret!
 
@@ -1188,9 +1188,9 @@ secrets:
   psql_password:
     file: ./psql_password.txt
 ```
-Secrets are assigned to the services that need them. The "short form" is shown above, there is a "long form" that allows specifying the user/permissions in the Linux syntax, targetting specific (non-root) users.
+Secrets are assigned to the services that need them. The "short form" is shown above, there is a "long form" that allows specifying the user/permissions in the Linux syntax, targeting specific (non-root) users.
 
-The `secret` section is either `file` based (as shown above) or `external` when the secrets are precreated (like with the CLI).
+The `secret` section is either `file` based (as shown above) or `external` when the secrets are pre-created (like with the CLI).
 
 * `docker stack deploy -c docker-compose.yml mydb` - Creates the secrets fists, then the network, then the services.
 
@@ -1244,7 +1244,7 @@ secrets:
 Use the same compose file!
 
 * `docker-compose up -d`
-* `docker-compose exec psql cat /run/secrets/psql_user` - should output the content of the secret file, just like if we were in a swarm. This is becasue secrets are automatically bind mounted to the containers by Docker. This is absolutely *NOT secure*, but it works for dev. This only works for file based secrets, not for the `external` ones. This is cool, because now the secrets can be used the same way in dev as on production, with the same compose files.
+* `docker-compose exec psql cat /run/secrets/psql_user` - should output the content of the secret file, just like if we were in a swarm. This is because secrets are automatically bind mounted to the containers by Docker. This is absolutely *NOT secure*, but it works for dev. This only works for file based secrets, not for the `external` ones. This is cool, because now the secrets can be used the same way in dev as on production, with the same compose files.
 
 
 ### Full App lifecycle with Compose
@@ -1328,7 +1328,7 @@ secrets:
     file: psql-fake-password.txt
 ```
 
-* `docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d` for CI/testing, specifying compose files explicitely, in the order of base -> overriding files.
+* `docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d` for CI/testing, specifying compose files explicitly, in the order of base -> overriding files.
 
 *docker-compose.prod.yml*
 ```
@@ -1390,9 +1390,9 @@ Docker Hub is not the only public registry! It is the most popular. It has stora
 
 ### Docker Cloud
 
-* NOT a cloud hoster
+* NOT cloud hosting
 * Web based orchestration/management system for your Docker swarms and clusters. It helps create/manage stack, services in Amazon, Azure, etc.
-* Automated uilds $$
+* Automated builds $$
 * Security scan of images $$
 
 ### Docker Registry (open source)
@@ -1400,8 +1400,8 @@ Docker Hub is not the only public registry! It is the most popular. It has stora
 * Written in `go`
 * No UI, more like an HTTPS server
 * Default port: 5000
-* Can act as a registry proxy to cahce images pulled through Docker Hub
-* By deault it uses TLS, unless talking to localhost
+* Can act as a registry proxy to cache images pulled through Docker Hub
+* By default it uses TLS, unless talking to localhost
 
 * `docker container run -d -p5000:5000 --name registry registry` - That's it.
 * `docker image tag hello-world 127.0.0.1:5000/hello world` - Tags it in the local registry
@@ -1414,9 +1414,9 @@ Above examples do *NOT* retain images when they stop! For that we need a volume:
 
 ### Registry on a Swarm
 
-In a Swarm, you cannot use an image that is only in one node! It must be able to pull from a repository availabe for all nodes.
+In a Swarm, you cannot use an image that is only in one node! It must be able to pull from a repository available for all nodes.
 
-Becasue of the `Routing Mesh` 127.0.0.1:5000 is accessible by all nodes.
+Because of the `Routing Mesh` 127.0.0.1:5000 is accessible by all nodes.
 
 Registry can run the same way in a Swarm pretty much the same way, running as a `service`.
 
@@ -1464,7 +1464,7 @@ If the `docker` command (like `docker ps`) doesn't work in your Windows console 
 
 ...other than `docker stats` and `docker service logs`
 
-> * [cadvisor](https://github.com/google/cadvisor) - "Container Advisor", real time resource usage and performance data monitoring (fancy verion of `docker stats` on a web page). Backed by Google. Simple, runs as a container alongside of the other containers, no historical data, not meant to be for production.
+> * [cadvisor](https://github.com/google/cadvisor) - "Container Advisor", real time resource usage and performance data monitoring (fancy version of `docker stats` on a web page). Backed by Google. Simple, runs as a container alongside of the other containers, no historical data, not meant to be for production.
 > * [DataDog](https://www.datadoghq.com/) - Good for production. Free for 5 hosts (1 day data retention). Need to install agents. Alerts too.
 
 > * [logspout](https://github.com/gliderlabs/logspout) - a log router for Docker containers that runs inside Docker. Runs in a container itself. It attaches to all containers on a host, then routes their logs wherever you want. It's a mostly stateless log appliance. It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
@@ -1473,11 +1473,11 @@ If the `docker` command (like `docker ps`) doesn't work in your Windows console 
 
 ### Public domain related services
 
-> * http://internetbs.net - Domain name regisrar charging $9/year for `.com`, *including* whois protection. Hosted outseide the U.S..
+> * http://internetbs.net - Domain name registrar charging $9/year for `.com`, *including* whois protection. Hosted outside the U.S..
 > * https://letsencrypt.org/ - Free, real SSL/TLS Certificates (with 90 days validity)
 > * https://www.ssllabs.com/ssltest/ - SSL test for web sites. You should see A+ rating!
 
 ### Some free, self-paced training
 
- * http://training.play-with-docker.com/
- * http://container.training
+> * http://training.play-with-docker.com/
+> * http://container.training
