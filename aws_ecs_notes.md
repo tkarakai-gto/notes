@@ -1,33 +1,31 @@
 # AWS Notes
 
 ## Table of Contents
-<!-- MDTOC maxdepth:2 firsth1:2 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [Table of Contents](#Table-of-Contents)
-- [AWS -- Amazon Web Services](#AWS-Amazon-Web-Services)
-- [AWS CLI](#AWS-CLI)
-- [IAM -- Identity and Access Management](#IAM-Identity-and-Access-Management)
-   - [Creating Users, Groups](#Creating-Users-Groups)
-   - [Security Group](#Security-Group)
-   - [Roles](#Roles)
-- [EC2 -- Elastic Compute Cloud](#EC2-Elastic-Compute-Cloud)
-- [ELB -- Elastic Load Balancing](#ELB-Elastic-Load-Balancing)
-- [ECR -- EC2 Container Registry](#ECR-EC2-Container-Registry)
-- [ECS -- EC2 Container Service](#ECS-EC2-Container-Service)
-   - [ECS CLI](#ECS-CLI)
-   - [Clusters](#Clusters)
-   - [Prepare the S3 bucket for ECS Container Agent configuration](#Prepare-the-S3-bucket-for-ECS-Container-Agent-configuration)
-   - [ECS Container Agent](#ECS-Container-Agent)
-   - [Container Instances](#Container-Instances)
-   - [Task Definitions](#Task-Definitions)
-   - [Running Tasks](#Running-Tasks)
-   - [Scheduling Services](#Scheduling-Services)
-   - [Tearing Down a Cluster](#Tearing-Down-a-Cluster)
-   - [Ruby on Rails App example](#Ruby-on-Rails-App-example)
-- [Related AWS Terms](#Related-AWS-Terms)
-- [F.A.Q., Troubleshooting](#FAQ-Troubleshooting)
+- [Table of Contents](#table-of-contents)
+- [AWS -- Amazon Web Services](#aws----amazon-web-services)
+- [AWS CLI](#aws-cli)
+- [IAM -- Identity and Access Management](#iam----identity-and-access-management)
+  - [Creating Users, Groups](#creating-users-groups)
+  - [Security Group](#security-group)
+  - [Roles](#roles)
+- [EC2 -- Elastic Compute Cloud](#ec2----elastic-compute-cloud)
+- [ELB -- Elastic Load Balancing](#elb----elastic-load-balancing)
+- [ECR -- EC2 Container Registry](#ecr----ec2-container-registry)
+- [ECS -- EC2 Container Service](#ecs----ec2-container-service)
+  - [ECS CLI](#ecs-cli)
+  - [Clusters](#clusters)
+  - [Prepare the S3 bucket for ECS Container Agent configuration](#prepare-the-s3-bucket-for-ecs-container-agent-configuration)
+  - [ECS Container Agent](#ecs-container-agent)
+  - [Container Instances](#container-instances)
+  - [Task Definitions](#task-definitions)
+  - [Running Tasks](#running-tasks)
+  - [Scheduling Services](#scheduling-services)
+  - [Tearing Down a Cluster](#tearing-down-a-cluster)
+  - [Ruby on Rails App example](#ruby-on-rails-app-example)
+- [AWS Terms (Glossary)](#aws-terms-glossary)
+- [F.A.Q., Troubleshooting](#faq-troubleshooting)
 
-<!-- /MDTOC -->
 
 ## AWS -- Amazon Web Services
 
@@ -115,7 +113,7 @@ IAM roles are a secure way to grant permissions to entities that you trust on AW
  - An AWS service that needs to act on resources in your account to provide its features
  - Users from a corporate directory who use identity federation with SAML
 
-IAM roles issue keys that are valid for short durations, making them a more secure way to grant access.
+IAM roles issue keys that are valid for short duration, making them a more secure way to grant access.
 
 It is too difficult to create roles with the CLI, it would require passing in JSON files as "trust policies" that I could not find anywhere, so here are the instructions using the Web Console.
 
@@ -170,7 +168,7 @@ You can configure health checks, which are used to monitor the health of the reg
 
  Example commands:
 
-  - `aws ecr get-login` -- Generates a `docker login` command that logs you intto the AWS Container Registry for 12 hours.
+  - `aws ecr get-login` -- Generates a `docker login` command that logs you into the AWS Container Registry for 12 hours.
   - `aws ecr create-repository --repository-name deepdive/nginx` -- Create a new repository
   - `aws ecr describe-repositories` -- Describe all repositories
   - `aws ecr list-images --repository-name deepdive/nginx` -- List all images in the deepdive/nginx repository
@@ -243,9 +241,9 @@ Example commands:
 
 ### Task Definitions
 
-A *task definition* is a JSON document describing how your applications Docker Images should be ran. It's kind of like a `docker-compose` file, ala AWS. The application can include one or more Docker container instances.  It might associate volumes to the containers. It defines the Docker images, along with settings such as the memory and CPU resources assigned to a container, or the ports mapped to a container.
+A *task definition* is a JSON document describing how your applications Docker Images should be ran. It's kind of like a `docker-compose` file, a la AWS. The application can include one or more Docker container instances.  It might associate volumes to the containers. It defines the Docker images, along with settings such as the memory and CPU resources assigned to a container, or the ports mapped to a container.
 
-Exmaple:
+Example:
 
 File `web-task-definition.json`:
 ```json
@@ -356,7 +354,7 @@ Example commands:
 
  - `aws ecs create-service --cluster deepdive --service-name web --task-definition web --desired-count 1` -- Create service without a Service Definition file, no load balancers
  - `aws ecs list-services --cluster deepdive`
- - `aws ecs describe-services --cluster deepdive --services web` -- Look for the `events` section when troublshooting!
+ - `aws ecs describe-services --cluster deepdive --services web` -- Look for the `events` section when troubleshooting!
  - `aws ec2 describe-instances` - to get to know the public DNS name of the service
  - `aws ecs update-service --cluster deepdive --service web --task-definition web --desired-count 2` -- More instances (will fail if there are not enough instances, and pointless without load balancing!)
  - `aws ecs update-service --cluster deepdive --service web --task-definition web --desired-count 0` -- No instances!
@@ -440,7 +438,7 @@ File `web-service.json`:
 ## AWS Terms (Glossary)
 
  - S3 -- [Simple Storage Service](https://aws.amazon.com/documentation/s3/)
- - Route 53 -- [DNS Servicwe](https://aws.amazon.com/route53/)
+ - Route 53 -- [DNS Service](https://aws.amazon.com/route53/)
  - RDS -- [Relational Database Service](https://aws.amazon.com/rds/)
     - Engines supported:
       - MySQL
@@ -480,7 +478,7 @@ File `web-service.json`:
 
 **PROBLEM:** How does the `aws ec2 run-instances --image-id ami-...` command knows to join an ECS cluster?
 
-**SOLUTION:** Based on the `ecs.config` file, in  there the `ECS_CLUSTER=production` confiuration (in this case specifying the cluster called `production`). This file is made available by copying it in to the instance from an S3 bucket. The script that copies it in is specified in the `--user-data file://copy-ecs-config-to-s3` which gets executed on the instance at startup time.
+**SOLUTION:** Based on the `ecs.config` file, in  there the `ECS_CLUSTER=production` configuration (in this case specifying the cluster called `production`). This file is made available by copying it in to the instance from an S3 bucket. The script that copies it in is specified in the `--user-data file://copy-ecs-config-to-s3` which gets executed on the instance at startup time.
 
 File: copy-ecs-config-to-s3
 ```
