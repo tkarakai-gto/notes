@@ -4,42 +4,40 @@ These are some notes about Redis that I thought were worth writing down. Far fro
 
 ## Table of Contents
 
-<!-- TOC START min:2 max:4 link:true update:true -->
-  - [Table of Contents](#table-of-contents)
-  - [What is Redis?](#what-is-redis)
-    - [As a cache](#as-a-cache)
-    - [As a Database](#as-a-database)
-    - [As a Pub/Sub messaging system](#as-a-pubsub-messaging-system)
-    - [Very fast (that's the reputation)](#very-fast-thats-the-reputation)
-    - ["Traditional" Use Cases](#traditional-use-cases)
-    - [More "Interesting" Use Cases](#more-interesting-use-cases)
-  - [Data types and abstractions](#data-types-and-abstractions)
-      - [Strings](#strings)
-      - [Lists](#lists)
-      - [Sets](#sets)
-      - [Sorted Set](#sorted-set)
-      - [Hash](#hash)
-      - [Bitmap](#bitmap)
-      - [Hyperloglog](#hyperloglog)
-      - [Geospatial](#geospatial)
-      - [PubSub](#pubsub)
-  - [Clients](#clients)
-  - [Scaling and HA](#scaling-and-ha)
-      - [Replication](#replication)
-      - [Redis Sentinel](#redis-sentinel)
-      - [Partitioning](#partitioning)
-      - [twemproxy (nutcracker)](#twemproxy-nutcracker)
-      - [Redis Cluster](#redis-cluster)
-      - [Redis(e) Pack from RedisLabs](#redise-pack-from-redislabs)
-    - [Why you shouldn't READ from Slaves](#why-you-shouldnt-read-from-slaves)
-      - [Case Study - What happens during failover (using Sentinel)?](#case-study---what-happens-during-failover-using-sentinel)
-      - [Conclusion](#conclusion)
-  - [Tips for operations](#tips-for-operations)
-  - [Further Reading](#further-reading)
-    - [Self learning](#self-learning)
-    - [Clustering/Sentinel (Redis in Production)](#clusteringsentinel-redis-in-production)
+- [Table of Contents](#table-of-contents)
+- [What is Redis?](#what-is-redis)
+  - [As a cache](#as-a-cache)
+  - [As a Database](#as-a-database)
+  - [As a Pub/Sub messaging system](#as-a-pubsub-messaging-system)
+  - [Very fast (that's the reputation)](#very-fast-thats-the-reputation)
+  - ["Traditional" Use Cases](#traditional-use-cases)
+  - [More "Interesting" Use Cases](#more-interesting-use-cases)
+- [Data types and abstractions](#data-types-and-abstractions)
+    - [Strings](#strings)
+    - [Lists](#lists)
+    - [Sets](#sets)
+    - [Sorted Set](#sorted-set)
+    - [Hash](#hash)
+    - [Bitmap](#bitmap)
+    - [Hyperloglog](#hyperloglog)
+    - [Geospatial](#geospatial)
+    - [PubSub](#pubsub)
+- [Clients](#clients)
+- [Scaling and HA](#scaling-and-ha)
+    - [Replication](#replication)
+    - [Redis Sentinel](#redis-sentinel)
+    - [Partitioning](#partitioning)
+    - [twemproxy (nutcracker)](#twemproxy-nutcracker)
+    - [Redis Cluster](#redis-cluster)
+    - [Redis(e) Pack from RedisLabs](#redise-pack-from-redislabs)
+  - [Why you shouldn't READ from Slaves](#why-you-shouldnt-read-from-slaves)
+    - [Case Study - What happens during failover (using Sentinel)?](#case-study---what-happens-during-failover-using-sentinel)
+    - [Conclusion](#conclusion)
+- [Tips for operations](#tips-for-operations)
+- [Further Reading](#further-reading)
+  - [Self learning](#self-learning)
+  - [Clustering/Sentinel (Redis in Production)](#clusteringsentinel-redis-in-production)
 
-<!-- TOC END -->
 
 ## What is Redis?
 
@@ -54,7 +52,6 @@ The name stands for: *REmote DIctionary Server*.
  * Supports [*pipelines*](https://redis.io/topics/pipelining) and [*basic transactions*](https://redis.io/topics/transactions)
  * Supports [LUA scripting](https://redis.io/commands#scripting) (LUA compiles into memory) and [modules](https://redis.io/modules) to add flexibility
  * Redis Cluster support for NAT / Docker in v4.0
-
  * Very efficient but *very simple*, low level tool (compared to SQL db indexes, query language, high level clustering, etc.)
  * Experiment with [Redis in docker-compose](https://github.com/tkarakai-gto/notes/blob/master/docker/redis/docker-compose.yml)!
 
@@ -62,15 +59,15 @@ The name stands for: *REmote DIctionary Server*.
 ### As a cache
 
  * Configurable eviction, [key expiration](https://redis.io/commands/expire)
- * Optional data persistance (unusual for a cache system) so this cache can recover from a melt-down (does not need to start "cold")
- * "Intelligent" cache, becasue the data can be analysed/quaried with a lots of commands
+ * Optional data persistence (unusual for a cache system) so this cache can recover from a melt-down (does not need to start "cold")
+ * "Intelligent" cache, because the data can be analyzed/queried with a lots of commands
  * Binary safe (no encoding)
  * String value is 512MB!
  * Ideal for:
    * Plain strings
    * Full JSON objects
    * Binary file content (e.g. for in-memory image manipulation, see BITOP)
-   * Raw bits/flags/counters (e.g. realtime metrics), see SETBIT, INCR, INCRBY
+   * Raw bits/flags/counters (e.g. real time metrics), see SETBIT, INCR, INCRBY
 
 
 ### As a Database
@@ -80,7 +77,9 @@ The name stands for: *REmote DIctionary Server*.
  * Can be used as *1st class database* in some cases
 
 
-### As a [Pub/Sub messaging system](https://redis.io/topics/pubsub)
+### As a Pub/Sub messaging system
+
+> https://redis.io/topics/pubsub
 
  * Very simple, fast and scalable async messaging
  * With some serious Limitations:
@@ -97,17 +96,17 @@ The name stands for: *REmote DIctionary Server*.
  * *Single-threaded server* (actually modern versions of Redis use threads for different things). It is not designed to benefit from multiple CPU cores, but [most of the time CPU is not the bottleneck](https://redis.io/topics/faq#redis-is-single-threaded-how-can-i-exploit-multiple-cpu--cores), memory and network are!.
  * You can [benchmark it yourself](https://redis.io/topics/benchmarks)
  * [Runs on *ARM processors*](https://redis.io/topics/ARM)
- * Base binary is <4MB, very small memory/CPU foorptint, can be *embedded in IoT* devices (think Raspberry Pi)
+ * Base binary is <4MB, very small memory/CPU footprint, can be *embedded in IoT* devices (think Raspberry Pi)
 
 
 ### "Traditional" Use Cases
 
- Here is an early post by antirez, Redis' lead developer (from 2011!) which explains that [Redis doesn't necesessarily has to replace other databases, it can solve "old" problems](http://oldblog.antirez.com/post/take-advantage-of-redis-adding-it-to-your-stack.html), like these:
+ Here is an early post by antirez, Redis' lead developer (from 2011!) which explains that [Redis doesn't necessarily has to replace other databases, it can solve "old" problems](http://oldblog.antirez.com/post/take-advantage-of-redis-adding-it-to-your-stack.html), like these:
 
  * Counting stuff
  * User session store
  * Recent visitor list
- * Leader board, user voting (show top users/players based on score crieria)
+ * Leader board, user voting (show top users/players based on score criteria)
  * Expired items in list (like user session expiration)
  * Unique items in a given amount of time
  * Real time basic analysis for stats, like inbound traffic tracking from IPs for DDOS detection)
@@ -128,41 +127,66 @@ Using Redis](https://d0.awsstatic.com/whitepapers/Database/database-caching-stra
  * A IoT sensor data fed into Redis for live reports, archived later
 
 
-## [Data types and abstractions](https://redis.io/topics/data-types-intro)
+## Data types and abstractions
 
-#### [Strings](https://redis.io/commands#string)
+> https://redis.io/topics/data-types-intro
+
+#### Strings
+
+> https://redis.io/commands#string
+
  * Binary safe strings
 
-#### [Lists](https://redis.io/commands#list)
+#### Lists
+
+> https://redis.io/commands#list
+
  * Linked lists
  * Max 4 billion in size
  * Ideal for queues, stacks, top N, etc.
 
-#### [Sets](https://redis.io/commands#set)
+#### Sets
+
+> https://redis.io/commands#set
+
  * Unique values
  * Union, Diff between multiple Sets, see SINTER
  * Extract random members, see SPOP
 
-#### [Sorted Set](https://redis.io/commands#sorted_set)
+#### Sorted Set
+
+> https://redis.io/commands#sorted_set
+
  * Adds a score to the set value
  * Can be used as indexes of other data
 
-#### [Hash](https://redis.io/commands#hash)
+#### Hash
+
+> https://redis.io/commands#hash
+
  * name value pairs inside of a single key
  * used for maps (like tables)
 
-#### [Bitmap](https://redis.io/commands/setbit)
+#### Bitmap
+
+> https://redis.io/commands/setbit
  * Operations on binary data in memory, see BITOP
 
-#### [Hyperloglog](https://redis.io/commands#hyperloglog)
+#### Hyperloglog
+
+> https://redis.io/commands#hyperloglog
  * Probabilistic cardinality estimator
  * Counts unique things statically
 
-#### [Geospatial](https://redis.io/commands#geo)
- * Members of a set representing lat/lon
- * Functions that return distance betwwen 2 memmbers and a list members in a given radius
+#### Geospatial
 
-#### [PubSub](https://redis.io/topics/pubsub)
+> https://redis.io/commands#geo
+ * Members of a set representing lat/lon
+ * Functions that return distance between 2 members and a list members in a given radius
+
+#### PubSub
+
+> https://redis.io/topics/pubsub
  * Simple pubsub messaging
 
 
@@ -170,22 +194,26 @@ Using Redis](https://d0.awsstatic.com/whitepapers/Database/database-caching-stra
 
 There is a [dedicated page](https://redis.io/clients) on Redis Clients. Some examples:
 
- * Java: [jedis](https://github.com/xetorthio/jedis) - Supports connecction pooling, pubsub, pipelines, transactions, LUA scripting, Sentinel, Cluster
+ * Java: [jedis](https://github.com/xetorthio/jedis) - Supports connection pooling, pubsub, pipelines, transactions, LUA scripting, Sentinel, Cluster
  * NodeJS: [ioredis](https://github.com/luin/ioredis) - Supports pipelines, pubsub, LUA scripting, Sentinel, Cluster
- * C: [hiredis](https://github.com/redis/hiredis) - Super fast, minimalistic client
+ * C: [hiredis](https://github.com/redis/hiredis) - Super fast, minimalist client
 
 
 ## Scaling and HA
 
-There are multiple overlapping solution to scaling and high availibility, some developed by the opensource Redis project (Sentinel and Redis Cluster), some by RedisLabs (RLEP) and some by independent projects (twemproxy) with different goals and features.
+There are multiple overlapping solution to scaling and high availability, some developed by the open source Redis project (Sentinel and Redis Cluster), some by RedisLabs (RLEP) and some by independent projects (twemproxy) with different goals and features.
 
-#### [Replication](https://redis.io/topics/replication)
+#### Replication
+
+> https://redis.io/topics/replication
 
  * Master to Slave replication and failover allows virtually no down time when Master goes down.
- * In a common scenario Master can interact with clents, while slave stores replicated data to disk
+ * In a common scenario Master can interact with clients, while slave stores replicated data to disk
 
 
-#### [Redis Sentinel](https://redis.io/topics/sentinel)
+#### Redis Sentinel
+
+> https://redis.io/topics/sentinel
 
  * Node monitoring, notification and failover management process, independent from Redis Cluster
  * Sentinel need "smart" (sentinel aware) Redis clients, OR having HAProxy in front of Redis to redirect to slave in case of master failure, OR use virtual IPs
@@ -196,14 +224,16 @@ There are multiple overlapping solution to scaling and high availibility, some d
 
 There are usually three different avenues for partitioning data with Redis—client-side partitioning, proxy assisted partitioning, and query routing.
 
- * In **client-side partitioning**, the partitioning logic is contained in the client code that selects the correct partition or Redis node based on either an algorithm, storing extra information, or somecombination of the two.
+ * In **client-side partitioning**, the partitioning logic is contained in the client code that selects the correct partition or Redis node based on either an algorithm, storing extra information, or some combination of the two.
 
  * With **proxy-assisted** partitioning, Redis clients connect to a proxy middleware (like [twemproxy](https://github.com/twitter/twemproxy) ) that then routes the client's requests to the correct Redis node.
 
  * The final implemented avenue for Redis partitioning is **query routing** where any client querying a random node in the cluster will be routed to the correct node containing the key, the approach taken in the current implementation of Redis cluster.
 
 
-#### [twemproxy (nutcracker)](https://github.com/twitter/twemproxy)
+#### twemproxy (nutcracker)
+
+> https://github.com/twitter/twemproxy
 
 Twemproxy is an open source project released by Twitter for creating a caching
 proxy between a client and backend made up of either Memecache or Redis
@@ -219,13 +249,17 @@ are set in a configuration YAML file.
  * Automatic sharding across multiple servers, without either the client or the servers knowing about it (!)
 
 
-#### [Redis Cluster](https://redis.io/topics/cluster-spec)
+#### Redis Cluster
+
+> https://redis.io/topics/cluster-spec
 
  * Data sharding and replication strategy with re-sharding between nodes while the nodes are running, with failover support.
  * Cluster needs "smart" (cluster aware) Redis clients
 
 
-#### [Redis(e) Pack](https://redislabs.com/products/redis-pack/) from RedisLabs
+#### Redis(e) Pack from RedisLabs
+
+> https://redislabs.com/products/redis-pack/
 
  * Offers a proxy based independent clustering (sharding) solution for $$.
  * Experiment with [Redis(e) Pack in docker-compose](https://github.com/tkarakai-gto/notes/tree/master/docker/redislabs)!
@@ -274,7 +308,7 @@ Do NOT interact with Slaves if you care about failover related down times. Inter
 
 * Simple data recovery: `dump.rdb` can be copied into the filesystem of a stopped Redis instance, and when Redis starts, it will restore its state from it.
 
-* **NEVER** use even number of sentines. They might not be able to pick a new master when half of the sentinels vote for one and the other half for another node. **ALWAYS** use odd number of sentines, at least 3.
+* **NEVER** use even number of sentinels. They might not be able to pick a new master when half of the sentinels vote for one and the other half for another node. **ALWAYS** use odd number of sentinels, at least 3.
 
 
 
@@ -297,6 +331,6 @@ Do NOT interact with Slaves if you care about failover related down times. Inter
  - https://scalegrid.io/blog/high-availability-with-redis-sentinels-connecting-to-redis-masterslave-sets/
  - http://code.flickr.net/2014/07/31/redis-sentinel-at-flickr/
  - http://www.programcreek.com/java-api-examples/index.php?source_dir=wint-master/wint-framework/src/main/java/wint/help/redis/SentinelRedisClient.java
- - Upgrading or restaring Redis without downtime: https://redis.io/topics/admin
+ - Upgrading or restarting Redis without downtime: https://redis.io/topics/admin
  - Clustering alternative: https://github.com/twitter/twemproxy - Proxy in front of Redis nodes, client sees a single Redis instance. Supports fail-over and limited sharding. See https://www.youtube.com/watch?v=3zxYaI3RQyM
  - Redis Sentinel failover case study: https://www.youtube.com/watch?v=wdPqFa3ru6U&list=PL83Wfqi-zYZF1MDKLr5djmLYUI0woy1wi&index=48 . Very useful!
